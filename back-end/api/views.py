@@ -36,12 +36,14 @@ def get_weather(request):
             temp = time.find(".//temperature")
             cloudiness = time.find(".//cloudiness")
             windspeed = time.find(".//windSpeed")
+            winddirection = time.find(".//windDirection")
 
             temperature = float(temp.get("value"))
             cloud = float(cloudiness.get("percent"))
             wind = float(windspeed.get("mps")) * 3.6
+            direction = winddirection.get("name")
 
-            values.append({"temperature": temperature, "cloudiness": round(cloud), "wind_speed": round(wind), "time":formatted_time})
+            values.append({"temperature": temperature, "cloudiness": round(cloud), "wind_speed": round(wind), "wind_direction": direction, "time":formatted_time})
             
 
             return JsonResponse(values, safe=False)

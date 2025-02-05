@@ -44,11 +44,18 @@ const Weather = () => {
             {error && <p style={{ color: "red" }}>{error}</p>}
 
             {weatherData && (
-                <div>
+                <div style={{ textAlign: "center" }}>
                     <p>At {weatherData.time}:</p>
-                    <p>Temperature: {weatherData.temperature}°C</p>
-                    <p>Cloudiness: {weatherData.cloudiness}%</p>
-                    <p>Wind Speed: {weatherData.wind_speed} km/h</p>
+                    <div style={{ 
+                        display: "flex", 
+                        gap: "10px", 
+                        alignItems: "center", 
+                        justifyContent: "center"
+                    }}>
+                        <p>Temperature: {weatherData.temperature}°C</p>
+                        <p>Cloudiness: {weatherData.cloudiness}%</p>
+                        <p>Wind Speed: {weatherData.wind_speed} km/h {weatherData.wind_direction}</p>
+                    </div>
                 </div>
             )}
         </div>
