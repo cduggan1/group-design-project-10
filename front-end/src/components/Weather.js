@@ -15,8 +15,7 @@ const Weather = () => {
         }
         
         const data = await response.json();
-        console.log(response)
-        setWeatherData(data[0]);  // Use first set of weather data
+        setWeatherData(data[0]);
         setError("");
             } catch (err) {
                 setError("Failed to fetch weather data");
@@ -27,7 +26,7 @@ const Weather = () => {
 
     return (
         <div>
-            <h2>Weather Information</h2>
+            <h2>Weather forecast</h2>
             <input
                 type="text"
                 placeholder="Latitude"
@@ -46,6 +45,7 @@ const Weather = () => {
 
             {weatherData && (
                 <div>
+                    <p>At {weatherData.time}:</p>
                     <p>Temperature: {weatherData.temperature}°C</p>
                     <p>Cloudiness: {weatherData.cloudiness}%</p>
                     <p>Wind Speed: {weatherData.wind_speed} km/h</p>

@@ -1,8 +1,10 @@
 from django.shortcuts import render
 import requests
+import platform
 import xml.etree.ElementTree as ET
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime
 
 @csrf_exempt
 def get_weather(request):
@@ -24,6 +26,12 @@ def get_weather(request):
 
         values = []
         for time in root.findall(".//time"):
+            forecast_time = time.get("from")
+            dt = datetime.strptime(forecast_time, "%Y-%m-%dT%H:%M:%SZ")
+            if platform.system() == "Windows":
+                formatted_time = dt.strftime("%I %p").lstrip("0")
+            else:
+                formatted_time = dt.strftime("%-I %p")
 
             temp = time.find(".//temperature")
             cloudiness = time.find(".//cloudiness")
@@ -33,6 +41,7 @@ def get_weather(request):
             cloud = float(cloudiness.get("percent"))
             wind = float(windspeed.get("mps")) * 3.6
 
-            values.append({"temperature": temperature, "cloudiness": round(cloud), "wind_speed": round(wind)})
+            values.append({"temperature": temperature, "cloudiness": round(cloud), "wind_speed": round(wind), "time":formatted_time})
+            
 
             return JsonResponse(values, safe=False)
