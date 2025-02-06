@@ -4,6 +4,8 @@ const Weather = () => {
     const [latitude, setLatitude] = useState("");
     const [longitude, setLongitude] = useState("");
     const [weatherData, setWeatherData] = useState(null);
+    const [address, setAddress] = useState("");
+    const [coordinates, setCoordinates] = useState(null);
     const [error, setError] = useState("");
 
     const fetchWeather = async () => {
@@ -22,6 +24,23 @@ const Weather = () => {
                 setWeatherData(null);
             }
     };
+
+    const fetchCoordinates = async () => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/address/?address=${address}`);
+            
+            if (!response.ok) {
+                throw new Error("Failed to fetch address");
+            }
+            
+            const data = await response.json();
+            setCoordinates(data[0]);
+            setError("");
+                } catch (err) {
+                    setError("Failed to fetch weather data");
+                    setCoordinates(null);
+                }
+        };
 
 
     return (
@@ -42,7 +61,6 @@ const Weather = () => {
             <button onClick={fetchWeather}>Get Weather</button>
 
             {error && <p style={{ color: "red" }}>{error}</p>}
-
             {weatherData && (
                 <div style={{ textAlign: "center" }}>
                     <p>At {weatherData.time}:</p>
@@ -56,6 +74,22 @@ const Weather = () => {
                         <p>Cloudiness: {weatherData.cloudiness}%</p>
                         <p>Wind Speed: {weatherData.wind_speed} km/h {weatherData.wind_direction}</p>
                     </div>
+                </div>
+            )}
+
+            <hr/>
+
+
+            <input
+                type="text"
+                placeholder="Address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+            />
+            <button onClick={fetchCoordinates}>Get coordinates</button>
+            {coordinates && (
+                <div style={{ textAlign: "center" }}>
+                    <p>At {coordinates.latitude}, {coordinates.longitude}</p>
                 </div>
             )}
         </div>

@@ -2,9 +2,11 @@ from django.shortcuts import render
 import requests
 import platform
 import xml.etree.ElementTree as ET
+import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
+from django.conf import settings
 
 @csrf_exempt
 def get_weather(request):
@@ -47,3 +49,26 @@ def get_weather(request):
             
 
             return JsonResponse(values, safe=False)
+
+def get_address(request):
+    if request.method == "GET":
+        address = request.GET.get("address")
+
+        if not address:
+            return JsonResponse({"error": "Address required"}, status=400)
+
+        api_key = settings.API_KEY
+
+        api_url = f"https://api.geocodify.com/v2/geocode?api_key={api_key}&q={address}"
+        response = requests.get(api_url)
+
+        if response.status_code != 200:
+            return JsonResponse({"error": "Failed to fetch weather data"}, status=response.status_code)
+
+        data = json.loads(response.text)
+        coordinates = data["response"]["features"][0]["geometry"]["coordinates"]
+        longitude, latitude = coordinates
+
+        values = []
+        values.append({"longitude": longitude, "latitude": latitude})
+        return JsonResponse(values, safe=False)
