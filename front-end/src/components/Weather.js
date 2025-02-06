@@ -129,6 +129,25 @@ const Weather = () => {
                     onChange={(e) => {setDestination(e.target.value)}}
                 />
                 <button onClick={fetchDirections}>Get Directions</button>
+
+                <button onClick={() => { 
+                setDestination("53.377,-6.073"); 
+                }}>
+                Get Directions to Howth
+                </button>
+               
+                <button onClick={() => { 
+                setDestination("53.144, -6.155"); 
+                }}>
+                Get Directions to the Sugar Loaf
+                </button>
+
+                <button onClick={() => { 
+                setDestination("53.141, -6.56"); 
+                }}>
+                Get Directions to the Blessington Greenway
+                </button>
+
                 {directions && (
                     <div>
                         {directions.map((direction, index) => (
