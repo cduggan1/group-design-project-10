@@ -81,6 +81,10 @@ def get_directions(request):
         if not start or not destination:
             return JsonResponse({"error": "Locations required"}, status=400)
         
+        start = ','.join(start.split(',')[::-1])
+        destination = ','.join(destination.split(',')[::-1])
+
+
         api_key = settings.DIRECTIONS_API_KEY
 
         api_url = f"https://api.openrouteservice.org/v2/directions/driving-car?api_key={api_key}&start={start}&end={destination}"

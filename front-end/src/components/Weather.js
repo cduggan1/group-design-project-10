@@ -40,9 +40,10 @@ const Weather = () => {
             setCoordinates(data[0]);
             setLatitude(data[0].latitude)
             setLongitude(data[0].longitude)
+            setStart(`${data[0].latitude}, ${data[0].longitude}`)
             setError("");
                 } catch (err) {
-                    setError("Failed to fetch weather data");
+                    setError("Failed to fetch coordinates");
                     setCoordinates(null);
                 }
         };
@@ -67,7 +68,6 @@ const Weather = () => {
 
     return (
         <div style={{ display: "flex", justifyContent: "center", gap: "30px", padding: "20px" }}>
-            
             {/* Location Section */}
             <div style={{ flex: 1, textAlign: "center" }}>
                 <h2>Set Location</h2>
@@ -100,9 +100,7 @@ const Weather = () => {
                     onChange={(e) => setLongitude(e.target.value)}
                 />
                 <button onClick={fetchWeather}>Get Weather</button>
-    
-                {error && <p style={{ color: "red" }}>{error}</p>}
-    
+        
                 {weatherData && (
                     <div>
                         <p>At {weatherData.time}:</p>
@@ -122,18 +120,15 @@ const Weather = () => {
                     type="text"
                     placeholder="From"
                     value={start}
-                    onChange={(e) => setStart(e.target.value)}
+                    onChange={(e) => {setStart(e.target.value)}}
                 />
                 <input
                     type="text"
                     placeholder="To"
                     value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
+                    onChange={(e) => {setDestination(e.target.value)}}
                 />
                 <button onClick={fetchDirections}>Get Directions</button>
-
-                {error && <p style={{ color: "red" }}>{error}</p>}
-
                 {directions && (
                     <div>
                         {directions.map((direction, index) => (
@@ -141,8 +136,23 @@ const Weather = () => {
                         ))}
                     </div>
                 )}
+            </div>
+
+            {/* Error Message */}
+            {error && (
+                <div
+                style={{
+                    position: "absolute",
+                    bottom: "20px",
+                    left: "20px",
+                    color: "red",
+                }}
+                >
+                <p>{error}</p>
+                </div>
+            )}
         </div>
-        </div>
+        
     );      
 };
 
