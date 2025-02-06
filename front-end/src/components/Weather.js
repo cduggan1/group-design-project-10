@@ -35,6 +35,8 @@ const Weather = () => {
             
             const data = await response.json();
             setCoordinates(data[0]);
+            setLatitude(data[0].latitude)
+            setLongitude(data[0].longitude)
             setError("");
                 } catch (err) {
                     setError("Failed to fetch weather data");
@@ -44,56 +46,56 @@ const Weather = () => {
 
 
     return (
-        <div>
-            <h2>Weather forecast</h2>
-            <input
-                type="text"
-                placeholder="Latitude"
-                value={latitude}
-                onChange={(e) => setLatitude(e.target.value)}
-            />
-            <input
-                type="text"
-                placeholder="Longitude"
-                value={longitude}
-                onChange={(e) => setLongitude(e.target.value)}
-            />
-            <button onClick={fetchWeather}>Get Weather</button>
-
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            {weatherData && (
-                <div style={{ textAlign: "center" }}>
-                    <p>At {weatherData.time}:</p>
-                    <div style={{ 
-                        display: "flex", 
-                        gap: "10px", 
-                        alignItems: "center", 
-                        justifyContent: "center"
-                    }}>
-                        <p>Temperature: {weatherData.temperature}°C</p>
-                        <p>Cloudiness: {weatherData.cloudiness}%</p>
-                        <p>Wind Speed: {weatherData.wind_speed} km/h {weatherData.wind_direction}</p>
-                    </div>
-                </div>
-            )}
-
-            <hr/>
-
-
-            <input
-                type="text"
-                placeholder="Address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-            />
-            <button onClick={fetchCoordinates}>Get coordinates</button>
-            {coordinates && (
-                <div style={{ textAlign: "center" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "30px", padding: "20px" }}>
+            
+            {/* Location Section */}
+            <div style={{ flex: 1, textAlign: "center" }}>
+                <h2>Set Location</h2>
+                <input
+                    type="text"
+                    placeholder="Address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                />
+                <button onClick={fetchCoordinates}>Get Coordinates</button>
+                
+                {coordinates && (
                     <p>At {coordinates.latitude}, {coordinates.longitude}</p>
-                </div>
-            )}
+                )}
+            </div>
+    
+            {/* Weather Section */}
+            <div style={{ flex: 1, textAlign: "center" }}>
+                <h2>Weather Forecast</h2>
+                <input
+                    type="text"
+                    placeholder="Latitude"
+                    value={latitude}
+                    onChange={(e) => setLatitude(e.target.value)}
+                />
+                <input
+                    type="text"
+                    placeholder="Longitude"
+                    value={longitude}
+                    onChange={(e) => setLongitude(e.target.value)}
+                />
+                <button onClick={fetchWeather}>Get Weather</button>
+    
+                {error && <p style={{ color: "red" }}>{error}</p>}
+    
+                {weatherData && (
+                    <div>
+                        <p>At {weatherData.time}:</p>
+                        <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+                            <p>Temperature: {weatherData.temperature}°C</p>
+                            <p>Cloudiness: {weatherData.cloudiness}%</p>
+                            <p>Wind Speed: {weatherData.wind_speed} km/h {weatherData.wind_direction}</p>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
-    );
+    );      
 };
 
 export default Weather;
