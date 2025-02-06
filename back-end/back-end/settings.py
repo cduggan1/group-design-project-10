@@ -137,4 +137,5 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
 
 
-API_KEY = env("API_KEY")
+LOCATION_API_KEY = env("LOCATION_API_KEY")
+DIRECTIONS_API_KEY = env("DIRECTIONS_API_KEY")

@@ -57,7 +57,7 @@ def get_address(request):
         if not address:
             return JsonResponse({"error": "Address required"}, status=400)
 
-        api_key = settings.API_KEY
+        api_key = settings.LOCATION_API_KEY
 
         api_url = f"https://api.geocodify.com/v2/geocode?api_key={api_key}&q={address}"
         response = requests.get(api_url)
@@ -72,3 +72,28 @@ def get_address(request):
         values = []
         values.append({"longitude": longitude, "latitude": latitude})
         return JsonResponse(values, safe=False)
+    
+def get_directions(request):
+    if request.method == "GET":
+        start = request.GET.get("from")
+        destination = request.GET.get("to")
+        
+        if not start or not destination:
+            return JsonResponse({"error": "Locations required"}, status=400)
+        
+        api_key = settings.DIRECTIONS_API_KEY
+
+        api_url = f"https://api.openrouteservice.org/v2/directions/driving-car?api_key={api_key}&start={start}&end={destination}"
+        response = requests.get(api_url)
+
+        if response.status_code != 200:
+            return JsonResponse({"error": "Failed to fetch directions"}, status=response.status_code)
+
+        data = json.loads(response.text)
+        instructions = []
+        for feature in data.get("features", []):
+            for segment in feature.get("properties", {}).get("segments", []):
+                for step in segment.get("steps", []):
+                    instructions.append(step.get("instruction", ""))
+        print(instructions)
+        return JsonResponse(instructions, safe=False)

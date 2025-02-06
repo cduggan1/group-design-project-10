@@ -6,6 +6,9 @@ const Weather = () => {
     const [weatherData, setWeatherData] = useState(null);
     const [address, setAddress] = useState("");
     const [coordinates, setCoordinates] = useState(null);
+    const [directions, setDirections] = useState(null);
+    const [start, setStart] = useState("");
+    const [destination, setDestination] = useState("");
     const [error, setError] = useState("");
 
     const fetchWeather = async () => {
@@ -44,6 +47,23 @@ const Weather = () => {
                 }
         };
 
+
+    const fetchDirections = async () => {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/directions/?from=${start}&to=${destination}`);
+        
+        if (!response.ok) {
+            throw new Error("Failed to fetch directions");
+        }
+        
+        const data = await response.json();
+        setDirections(data);
+        setError("");
+            } catch (err) {
+                setError("Failed to fetch directions");
+                setDirections(null);
+            }
+    };
 
     return (
         <div style={{ display: "flex", justifyContent: "center", gap: "30px", padding: "20px" }}>
@@ -94,6 +114,34 @@ const Weather = () => {
                     </div>
                 )}
             </div>
+
+            {/* Directions Section */}
+            <div style={{ flex: 1, textAlign: "center" }}>
+                <h2>Directions</h2>
+                <input
+                    type="text"
+                    placeholder="From"
+                    value={start}
+                    onChange={(e) => setStart(e.target.value)}
+                />
+                <input
+                    type="text"
+                    placeholder="To"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                />
+                <button onClick={fetchDirections}>Get Directions</button>
+
+                {error && <p style={{ color: "red" }}>{error}</p>}
+
+                {directions && (
+                    <div>
+                        {directions.map((direction, index) => (
+                            <p key={index}>{direction}</p>
+                        ))}
+                    </div>
+                )}
+        </div>
         </div>
     );      
 };
