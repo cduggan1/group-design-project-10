@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./weather
+    container_name: weather_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./weather:/app/weather
+    restart: always
+
+  frontend:
+    build: ./client
+    container_name: weather_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  pg_data:
