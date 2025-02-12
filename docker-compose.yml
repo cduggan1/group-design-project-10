@@ -7,8 +7,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./weather:/app/weather
+      - ./weather:/app
     restart: always
+    environment:
+      - DEBUG=True
+      - DJANGO_ALLOWED_HOSTS=localhost  # Modify as needed
 
   frontend:
     build: ./client
@@ -17,12 +20,14 @@ services:
       - "3000:3000"
     volumes:
       - ./client:/app
-      - /app/node_modules
+      - /app/node_modules  # Prevents overriding installed node_modules
     environment:
       - WATCHPACK_POLLING=true
+      - REACT_APP_API_URL=http://localhost:8000  # Ensure frontend talks to backend
     depends_on:
       - backend
     restart: always
+
 
 volumes:
   pg_data:
