@@ -8,6 +8,8 @@ services:
       - "8000:8000"
     volumes:
       - ./weather:/app/weather
+      - ./manage.py:/app/manage.py
+      - ./api:/app/api
     restart: always
 
   frontend:
