@@ -5,6 +5,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     binutils libproj-dev gdal-bin
 
+RUN ls -lah
+
 COPY requirements.txt /app/requirements.txt
 
 RUN pip install --upgrade pip
