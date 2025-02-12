@@ -2,16 +2,16 @@ version: "3.8"
 
 services:
   backend:
-    build: ./weather
+    build: ./  # Build from the root since weather/ and api/ are part of the backend
     container_name: weather_backend
     ports:
       - "8000:8000"
     volumes:
-      - ./weather:/app
+      - .:/app  # Mount the entire backend
     restart: always
     environment:
       - DEBUG=True
-      - DJANGO_ALLOWED_HOSTS=localhost  # Modify as needed
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
   frontend:
     build: ./client
@@ -20,10 +20,9 @@ services:
       - "3000:3000"
     volumes:
       - ./client:/app
-      - /app/node_modules  # Prevents overriding installed node_modules
     environment:
       - WATCHPACK_POLLING=true
-      - REACT_APP_API_URL=http://localhost:8000  # Ensure frontend talks to backend
+      - REACT_APP_API_URL=http://localhost:8000
     depends_on:
       - backend
     restart: always
