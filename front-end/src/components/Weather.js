@@ -1,6 +1,18 @@
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import React, { useState } from "react";
+import L from "leaflet"; // Import the Leaflet library
+
+// Fix for default icon not displaying in React-Leaflet
+const defaultIcon = new L.Icon({
+    iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+    iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+});
 
 const Weather = () => {
     // State variables for storing input values and fetched data
@@ -73,7 +85,9 @@ const Weather = () => {
                 setLongitude(e.latlng.lng.toFixed(6)); // Update longitude with clicked location
             },
         });
-        return latitude && longitude ? <Marker position={[latitude, longitude]} /> : null;
+        return latitude && longitude ? (
+            <Marker position={[latitude, longitude]} icon={defaultIcon} /> // Use the custom icon
+        ) : null;
     }
 
     return (
