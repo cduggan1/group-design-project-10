@@ -5,15 +5,14 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     binutils libproj-dev gdal-bin
 
-RUN ls -lah
-
 COPY requirements.txt /app/requirements.txt
-
 RUN pip install --upgrade pip
 RUN pip install -r /app/requirements.txt
 
 COPY . /app
 COPY .env /app/.env
+
+RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 

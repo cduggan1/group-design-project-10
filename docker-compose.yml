@@ -2,7 +2,9 @@ version: "3.8"
 
 services:
   backend:
-    build: ./weather
+    build:
+      context: .                  
+      dockerfile: Dockerfile      
     container_name: weather_backend
     ports:
       - "8000:8000"
