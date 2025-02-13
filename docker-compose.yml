@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  backend:
+    build: ./back-end
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./back-end:/app
+    environment:
+      - LOCATION_API_KEY=${LOCATION_API_KEY}
+      - DIRECTIONS_API_KEY=${DIRECTIONS_API_KEY} 

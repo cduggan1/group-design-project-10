@@ -1,0 +1,6 @@
+Django>=4.2,<5.0
+djangorestframework
+django-cors-headers
+django-environ
+requests
+django-leaflet 

@@ -46,9 +46,8 @@ def get_weather(request):
             direction = winddirection.get("name")
 
             values.append({"temperature": temperature, "cloudiness": round(cloud), "wind_speed": round(wind), "wind_direction": direction, "time":formatted_time})
-            
-
-            return JsonResponse(values, safe=False)
+        
+        return JsonResponse(values, safe=False)
 
 def get_address(request):
     if request.method == "GET":
