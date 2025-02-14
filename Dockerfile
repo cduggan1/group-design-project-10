@@ -10,7 +10,6 @@ RUN pip install --upgrade pip
 RUN pip install -r /app/requirements.txt
 
 COPY . /app
-COPY .env /app/.env
 
 RUN python manage.py collectstatic --noinput
 
