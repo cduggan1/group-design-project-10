@@ -28,7 +28,17 @@ SECRET_KEY = 'django-insecure-1#1jmy-pc%i_*gv5fqy*%*#1&z5*1*g3d9+0zqh06)mxok6ny*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",")
+ALLOWED_HOSTS = os.getenv(
+    "DJANGO_ALLOWED_HOSTS", 
+    "localhost,127.0.0.1,[::1],agreeable-estel-group-design-10-9b665ece.koyeb.app"
+).split(",")
+
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    "DJANGO_CSRF_TRUSTED_ORIGINS", 
+    "http://localhost,https://agreeable-estel-group-design-10-9b665ece.koyeb.app"
+).split(",")
+
+
 
 # Application definition
 
