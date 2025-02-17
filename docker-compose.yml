@@ -1,17 +1,35 @@
 version: "3.8"
 
 services:
+  db:
+    image: postgis/postgis:15-3.3
+    environment:
+      - POSTGRES_DB=weather_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
   backend:
     build:
       context: .                  
       dockerfile: Dockerfile      
     container_name: weather_backend
+    environment:
+      - DATABASE_NAME=weather_db
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_HOST=db
     ports:
       - "8000:8000"
     volumes:
       - ./weather:/app/weather
       - ./manage.py:/app/manage.py
       - ./api:/app/api
+    depends_on:
+      - db
     restart: always
 
   frontend:

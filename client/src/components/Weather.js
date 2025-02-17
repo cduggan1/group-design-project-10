@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import React, { useState } from "react";
 import L from "leaflet"; // Import the Leaflet library
+import WeatherAlerts from './WeatherAlerts';
 
 // Fix for default icon not displaying in React-Leaflet
 const defaultIcon = new L.Icon({
@@ -144,6 +145,11 @@ const Weather = () => {
                 <button onClick={() => setDestination("53.144, -6.155")}>Get Directions to the Sugar Loaf</button>
                 <button onClick={() => setDestination("53.141, -6.56")}>Get Directions to the Blessington Greenway</button>
                 {directions && directions.map((direction, index) => <p key={index}>{direction}</p>)}
+            </div>
+
+            {/* Weather Alerts Section - Displays weather alerts for selected coordinates */}
+            <div style={{ flex: 1, textAlign: "center" }}>
+                <WeatherAlerts latitude={latitude} longitude={longitude} />
             </div>
 
             {/* Error Message Display */}

@@ -7,6 +7,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from django.conf import settings
+from django.contrib.gis.measure import D
+from django.contrib.gis.geos import Point
+from .models import WeatherAlert
 
 @csrf_exempt
 def get_weather(request):
@@ -101,3 +104,29 @@ def get_directions(request):
                     instructions.append(step.get("instruction", ""))
         print(instructions)
         return JsonResponse(instructions, safe=False)
+
+@csrf_exempt
+def get_weather_alerts(request):
+    if request.method == "GET":
+        lat = request.GET.get("lat")
+        lon = request.GET.get("lon")
+        
+        if not lat or not lon:
+            return JsonResponse({"error": "Latitude and longitude required"}, status=400)
+            
+        # Create point from coordinates
+        user_location = Point(float(lon), float(lat))
+        
+        # Get active alerts within 50km radius
+        alerts = WeatherAlert.objects.filter(
+            is_active=True,
+            location__distance_lte=(user_location, D(km=50))
+        ).values(
+            'title', 
+            'description', 
+            'severity',
+            'start_time',
+            'end_time'
+        )
+        
+        return JsonResponse(list(alerts), safe=False)

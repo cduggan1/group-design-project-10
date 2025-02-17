@@ -35,3 +35,21 @@ class TestGeometry(models.Model):
     class Meta:
         verbose_name_plural = 'Test Geometries'
         verbose_name = 'Test Geometry' 
+
+class WeatherAlert(models.Model):
+    SEVERITY_CHOICES = [
+        ('LOW', 'Low'),
+        ('MODERATE', 'Moderate'),
+        ('SEVERE', 'Severe'),
+        ('EXTREME', 'Extreme')
+    ]
+    
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    severity = models.CharField(max_length=10, choices=SEVERITY_CHOICES)
+    location = models.PointField(geography=True)
+    radius_km = models.FloatField()  # Affected radius in kilometers
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
