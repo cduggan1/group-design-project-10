@@ -11,7 +11,7 @@ RUN pip install -r /app/requirements.txt
 
 COPY . /app
 
-RUN python manage.py collectstatic --noinput
+RUN python manage.py
 
 EXPOSE 8000
 
