@@ -35,7 +35,8 @@ const Weather = () => {
                 throw new Error("Failed to fetch weather data");
             }
             const data = await response.json();
-            setWeatherData(data[0]); // Store the fetched weather data
+            setWeatherData(data); // Store the fetched weather data
+            console.log(weatherData);
             setError(""); // Clear error message if successful
         } catch (err) {
             setError("Failed to fetch weather data");
@@ -123,15 +124,19 @@ const Weather = () => {
                 <input type="text" placeholder="Latitude" value={latitude} readOnly />
                 <input type="text" placeholder="Longitude" value={longitude} readOnly />
                 <button onClick={fetchWeather}>Get Weather</button>
-                {weatherData && (
+                {weatherData && weatherData.length === 24 && (
                     <div>
-                        <p>At {weatherData.time}:</p>
-                        <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
-                            <p>Temperature: {weatherData.temperature}°C</p>
-                            <p>Cloudiness: {weatherData.cloudiness}%</p>
-                            <p>Wind Speed: {weatherData.wind_speed} km/h {weatherData.wind_direction}</p>
-                            <p>Precipitation: {weatherData.rain} mm</p>
-                        </div>
+                        {weatherData.map((data, index) => (
+                            <div key={index}>
+                                <p>At {data.time}:</p>
+                                <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+                                    <p>Temperature: {data.temperature}°C</p>
+                                    <p>Cloudiness: {data.cloudiness}%</p>
+                                    <p>Wind Speed: {data.wind_speed} km/h {data.wind_direction}</p>
+                                    <p>Precipitation: {data.rain} mm</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>

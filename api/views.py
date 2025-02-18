@@ -31,40 +31,42 @@ def get_weather(request):
 
         values = []
         time_elements = root.findall(".//time")
-        if len(time_elements) >= 1:
-            time = time_elements[0]
+        if len(time_elements) > 48:
+            for x in range(0,24):
+                time = time_elements[(x*2)]
 
-            forecast_time = time.get("from")
-            dt = datetime.strptime(forecast_time, "%Y-%m-%dT%H:%M:%SZ")
-            if platform.system() == "Windows":
-                formatted_time = dt.strftime("%I %p").lstrip("0")
-            else:
-                formatted_time = dt.strftime("%-I %p")
+                forecast_time = time.get("from")
+                dt = datetime.strptime(forecast_time, "%Y-%m-%dT%H:%M:%SZ")
+                if platform.system() == "Windows":
+                    formatted_time = dt.strftime("%I %p").lstrip("0")
+                else:
+                    formatted_time = dt.strftime("%-I %p")
 
-            temp = time.find(".//temperature")
-            cloudiness = time.find(".//cloudiness")
-            windspeed = time.find(".//windSpeed")
-            winddirection = time.find(".//windDirection")
+                temp = time.find(".//temperature")
+                cloudiness = time.find(".//cloudiness")
+                windspeed = time.find(".//windSpeed")
+                winddirection = time.find(".//windDirection")
 
-            temperature = float(temp.get("value"))
-            cloud = float(cloudiness.get("percent"))
-            wind = float(windspeed.get("mps")) * 3.6
-            direction = winddirection.get("name")
+                temperature = float(temp.get("value"))
+                cloud = float(cloudiness.get("percent"))
+                wind = float(windspeed.get("mps")) * 3.6
+                direction = winddirection.get("name")
 
-            rain_time = time_elements[1]
-            precipitation = rain_time.find(".//precipitation")
-            mm = float(precipitation.get("value"))
+                rain_time = time_elements[(x*2)+1]
+                precipitation = rain_time.find(".//precipitation")
+                mm = float(precipitation.get("value"))
 
-            values.append({
-                "temperature": temperature,
-                "cloudiness": round(cloud),
-                "wind_speed": round(wind),
-                "wind_direction": direction,
-                "time": formatted_time,
-                "rain": mm
-            })
+                values.append({
+                    "temperature": temperature,
+                    "cloudiness": round(cloud),
+                    "wind_speed": round(wind),
+                    "wind_direction": direction,
+                    "time": formatted_time,
+                    "rain": mm
+                })
+                print(values)
 
-        return JsonResponse(values, safe=False)
+            return JsonResponse(values, safe=False)
 
 
 def get_address(request):
