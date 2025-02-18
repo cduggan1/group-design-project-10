@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 const Location = ({ updateLocation, initialCoordinates }) => {
   // State variables for storing input values and fetched data
+  const BASE_URL = process.env.REACT_APP_API_URL;
   const [address, setAddress] = useState(""); // Stores user-input address
   const [coordinates, setCoordinates] = useState(initialCoordinates || null); // Stores fetched coordinates
   const [error, setError] = useState(""); // Stores error messages
@@ -16,7 +17,7 @@ const Location = ({ updateLocation, initialCoordinates }) => {
   // Function to fetch coordinates from an address
   const fetchCoordinates = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/address/?address=${address}`);
+      const response = await fetch(`${BASE_URL}/api/address/?address=${address}`);
       if (!response.ok) {
         throw new Error("Failed to fetch address");
       }

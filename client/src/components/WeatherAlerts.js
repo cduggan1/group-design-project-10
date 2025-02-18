@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 
 const WeatherAlerts = ({ latitude, longitude }) => {
     const [alerts, setAlerts] = useState([]);
-    
+    const BASE_URL = process.env.REACT_APP_API_URL;
     const fetchAlerts = async () => {
         try {
             const response = await fetch(
-                `http://127.0.0.1:8000/api/weather-alerts/?lat=${latitude}&lon=${longitude}`
+                `${BASE_URL}/api/weather-alerts/?lat=${latitude}&lon=${longitude}`
             );
             if (!response.ok) {
                 throw new Error("Failed to fetch alerts");

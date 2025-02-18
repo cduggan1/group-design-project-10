@@ -16,13 +16,14 @@ const defaultIcon = new L.Icon({
 });
 
 const Weather = ({ latitude, longitude }) => {
+  const BASE_URL = process.env.REACT_APP_API_URL;
   const [weatherData, setWeatherData] = useState(null); // Stores fetched weather data
   const [error, setError] = useState(""); // Stores error messages
 
   // Function to fetch weather data based on latitude and longitude
   const fetchWeather = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/weather/?lat=${latitude}&lon=${longitude}`);
+      const response = await fetch(`${BASE_URL}/api/weather/?lat=${latitude}&lon=${longitude}`);
       if (!response.ok) {
         throw new Error("Failed to fetch weather data");
       }

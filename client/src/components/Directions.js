@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 
-const Directions = ({ latitude, longitude }) => {
+const Directions = ({ latitude, longitude}) => {
   // State variables for storing input values and fetched data
+  const BASE_URL = process.env.REACT_APP_API_URL;
+
   const [start, setStart] = useState(`${latitude}, ${longitude}`); // Start with the current latitude and longitude as default
   const [destination, setDestination] = useState(""); // Destination input value
   const [directions, setDirections] = useState(null); // Stores fetched directions
@@ -10,7 +12,7 @@ const Directions = ({ latitude, longitude }) => {
   // Fetch directions from API
   const fetchDirections = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/directions/?from=${start}&to=${destination}`);
+      const response = await fetch(`${BASE_URL}/api/directions/?from=${start}&to=${destination}`);
       if (!response.ok) {
         throw new Error("Failed to fetch directions");
       }
