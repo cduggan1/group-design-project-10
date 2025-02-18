@@ -30,7 +30,10 @@ def get_weather(request):
         root = ET.fromstring(xml_data)
 
         values = []
-        for time in root.findall(".//time"):
+        time_elements = root.findall(".//time")
+        if len(time_elements) >= 1:
+            time = time_elements[0]
+
             forecast_time = time.get("from")
             dt = datetime.strptime(forecast_time, "%Y-%m-%dT%H:%M:%SZ")
             if platform.system() == "Windows":
@@ -48,10 +51,21 @@ def get_weather(request):
             wind = float(windspeed.get("mps")) * 3.6
             direction = winddirection.get("name")
 
-            values.append({"temperature": temperature, "cloudiness": round(cloud), "wind_speed": round(wind), "wind_direction": direction, "time":formatted_time})
-            
+            rain_time = time_elements[1]
+            precipitation = rain_time.find(".//precipitation")
+            mm = float(precipitation.get("value"))
 
-            return JsonResponse(values, safe=False)
+            values.append({
+                "temperature": temperature,
+                "cloudiness": round(cloud),
+                "wind_speed": round(wind),
+                "wind_direction": direction,
+                "time": formatted_time,
+                "rain": mm
+            })
+
+        return JsonResponse(values, safe=False)
+
 
 def get_address(request):
     if request.method == "GET":

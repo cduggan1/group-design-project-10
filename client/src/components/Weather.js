@@ -130,6 +130,7 @@ const Weather = () => {
                             <p>Temperature: {weatherData.temperature}°C</p>
                             <p>Cloudiness: {weatherData.cloudiness}%</p>
                             <p>Wind Speed: {weatherData.wind_speed} km/h {weatherData.wind_direction}</p>
+                            <p>Precipitation: {weatherData.rain} mm</p>
                         </div>
                     </div>
                 )}
