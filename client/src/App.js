@@ -22,7 +22,7 @@ function App() {
                 {/* Navbar with links */}
                 <nav>
                     <ul>
-                        <li><Link to="/location">Location</Link></li>
+                        <li><Link to="/location">Set Location</Link></li>
                         <li><Link to="/">Weather</Link></li>
                         <li><Link to="/directions">Directions</Link></li>
                     </ul>

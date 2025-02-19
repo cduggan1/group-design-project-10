@@ -64,9 +64,32 @@ def get_weather(request):
                     "time": formatted_time,
                     "rain": mm
                 })
-                print(values)
 
             return JsonResponse(values, safe=False)
+
+def get_solar(request):
+    if request.method == "GET":
+        lat = request.GET.get("lat")
+        lon = request.GET.get("lon")
+
+        if not lat or not lon:
+            return JsonResponse({"error": "Latitude and longitude required"}, status=400)
+
+        api_url = f"https://api.sunrise-sunset.org/json?lat={lon}&lng={lon}"
+        response = requests.get(api_url)
+
+        if response.status_code != 200:
+            return JsonResponse({"error": "Failed to fetch solar data"}, status=response.status_code)
+
+        
+        data = response.text
+        data = json.loads(response.text)
+
+        values = []
+        sunrise_time = data["results"]["sunrise"]
+        sunset_time = data["results"]["sunset"]
+        values.append({"rise": sunrise_time, "set": sunset_time})
+        return JsonResponse(values, safe=False)
 
 
 def get_address(request):

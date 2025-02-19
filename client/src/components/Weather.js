@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import React, { useState, useEffect } from "react";
+import React, { useState} from "react";
 import L from "leaflet"; // Import the Leaflet library
 import WeatherAlerts from "./WeatherAlerts";
 import "./Weather.css";
@@ -21,6 +21,7 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
   const [latitude, setLatitude] = useState(initialLat);
   const [longitude, setLongitude] = useState(initialLon);
   const [weatherData, setWeatherData] = useState(null);
+  const [solarData, setSolarData] = useState(null);
   const [error, setError] = useState("");
 
   // Function to fetch weather data based on latitude and longitude
@@ -36,6 +37,23 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
     } catch (err) {
       setError("Failed to fetch weather data");
       setWeatherData(null);
+    }
+  };
+
+
+  const fetchSolar = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/solar/?lat=${latitude}&lon=${longitude}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch solar data");
+      }
+      const data = await response.json();
+      setSolarData(data);
+      console.log("Solar Data!")
+      setError("");
+    } catch (err) {
+      setError("Failed to fetch solar data");
+      setSolarData(null);
     }
   };
 
@@ -58,87 +76,124 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", width: "100%", gap: "30px" }}>
-        {/* Weather Section - Displays weather forecast for selected coordinates */}
-        <div style={{ flex: 1, textAlign: "center" }}>
-          <h2>Weather Forecast</h2>
-          <div style={{ height: "300px", width: "100%", marginBottom: "10px" }}>
-            <MapContainer center={[53.49, -7.562]} zoom={7} style={{ height: "100%", width: "100%" }}>
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              <LocationMarker />
-            </MapContainer>
-          </div>
-          <input type="text" placeholder="Latitude" value={latitude} readOnly />
-          <input type="text" placeholder="Longitude" value={longitude} readOnly />
-          <button onClick={fetchWeather}>Get Weather</button>
-        </div>
-
-        {/* Table Section - Displays weather data in a table beside the map */}
-        <div style={{ flex: 1, textAlign: "center" }}>
-          {weatherData && weatherData.length === 24 && (
-            <div className="weather-table-container">
-              <table className="weather-table">
-              <thead>
-                <tr>
-                  <th>Time </th>
-                  <th>Temperature</th>
-                  <th>Cloudiness</th>
-                  <th>Wind Speed</th>
-                  <th>Precipitation</th>
-                  <th style={{ borderLeft: '3px solid black' }}>Time</th>
-                  <th>Temperature</th>
-                  <th>Cloudiness</th>
-                  <th>Wind Speed</th>
-                  <th>Precipitation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {weatherData &&
-                  weatherData.length > 1 &&
-                  weatherData.map((data, index) => {
-                    if (index % 2 === 0) {
-                      const nextData = weatherData[index + 1]; // Get the next hour data (pair)
-                      return (
-                        <tr key={index}>
-                          <td>{data.time}</td>
-                          <td>{data.temperature}°C</td>
-                          <td>{data.cloudiness}%</td>
-                          <td>{data.wind_speed} km/h</td>
-                          <td>{data.rain} mm</td>
-
-                          {nextData ? (
-                            <>
-                              <td style={{ borderLeft: '3px solid black' }}>{nextData.time}</td>
-                              <td>{nextData.temperature}°C</td>
-                              <td>{nextData.cloudiness}%</td>
-                              <td>{nextData.wind_speed} km/h</td>
-                              <td>{nextData.rain} mm</td>
-                            </>
-                          ) : (
-                            // If there's no pair (odd number of entries), show empty cells
-                            <>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                            </>
-                          )}
-                        </tr>
-                      );
-                    } else {
-                      return null; // Skip odd rows as they are already included in pairs
-                    }
-                  })}
-              </tbody>
-            </table>
-
-            </div>
-          )}
-        </div>
+    {/* Weather Section - Displays weather forecast for selected coordinates */}
+    <div style={{ flex: 1, textAlign: "center" }}>
+      <h2>Weather Forecast</h2>
+      <div style={{ height: "300px", width: "100%", marginBottom: "10px" }}>
+        <MapContainer center={[53.49, -7.562]} zoom={7} style={{ height: "100%", width: "100%" }}>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <LocationMarker />
+        </MapContainer>
       </div>
+      <div>
+        <input type="text" placeholder="Latitude" value={latitude} readOnly />
+        <input type="text" placeholder="Longitude" value={longitude} readOnly />
+        <button onClick={() => { fetchSolar(); fetchWeather();}}>Get Weather</button>
+      </div>
+      {weatherData && solarData &&
+      <>
+        <div>At {weatherData[0].time}</div>
+        <table style={{textAlign: "center", width: "100%"}}>
+          <tbody>
+              <tr>
+                <td>Temperature</td>
+                <td>Cloudiness</td>
+                <td>Wind</td>
+                <td>Precipitation</td>
+              </tr>
+              <tr>
+                <td>{weatherData[0].temperature}°C</td>
+                <td>{weatherData[0].cloudiness}%</td>
+                <td>{weatherData[0].wind_speed} km/h {weatherData[0].wind_direction}</td>
+                <td>{weatherData[0].rain} mm</td>
+              </tr>
+          </tbody>
+        </table>
+        <hr/>
+        <table style={{textAlign: "center", width: "100%"}}>
+          <tbody>
+              <tr>
+                <td>Sunrise</td>
+                <td>Sunset</td>
+              </tr>
+              <tr>
+                <td>{solarData.rise}</td>
+                <td>{solarData.set}</td>
+              </tr>
+          </tbody>
+        </table>
+      </>
+      }
+
+    </div>
+
+    {/* Table Section - Displays weather data in a table beside the map */}
+    <div style={{ flex: 1, textAlign: "center" }}>
+      {weatherData && weatherData.length === 24 && (
+        <div className="weather-table-container">
+          <table className="weather-table">
+            <thead>
+              <tr>
+                <th>Time </th>
+                <th>Temperature</th>
+                <th>Cloudiness</th>
+                <th>Wind Speed</th>
+                <th>Precipitation</th>
+                <th style={{ borderLeft: '3px solid black' }}>Time</th>
+                <th>Temperature</th>
+                <th>Cloudiness</th>
+                <th>Wind Speed</th>
+                <th>Precipitation</th>
+              </tr>
+            </thead>
+            <tbody>
+              {weatherData &&
+                weatherData.length > 1 &&
+                weatherData.map((data, index) => {
+                  if (index % 2 === 0) {
+                    const nextData = weatherData[index + 1]; // Get the next hour data (pair)
+                    return (
+                      <tr key={index}>
+                        <td>{data.time}</td>
+                        <td>{data.temperature}°C</td>
+                        <td>{data.cloudiness}%</td>
+                        <td>{data.wind_speed} km/h {data.wind_direction}</td>
+                        <td>{data.rain} mm</td>
+
+                        {nextData ? (
+                          <>
+                            <td style={{ borderLeft: '3px solid black' }}>{nextData.time}</td>
+                            <td>{nextData.temperature}°C</td>
+                            <td>{nextData.cloudiness}%</td>
+                            <td>{nextData.wind_speed} km/h {nextData.wind_direction}</td>
+                            <td>{nextData.rain} mm</td>
+                          </>
+                        ) : (
+                          // If there's no pair (odd number of entries), show empty cells
+                          <>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                          </>
+                        )}
+                      </tr>
+                    );
+                  } else {
+                    return null; // Skip odd rows as they are already included in pairs
+                  }
+                })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  </div>
+
 
 
       {/* Error Message Display */}
