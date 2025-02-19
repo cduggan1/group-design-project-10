@@ -3,10 +3,13 @@ import requests
 import platform
 import xml.etree.ElementTree as ET
 import json
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import cache_page
+from django.core.serializers import serialize
 from datetime import datetime
 from django.conf import settings
+from .models import Trail
 
 @csrf_exempt
 def get_weather(request):
@@ -101,3 +104,23 @@ def get_directions(request):
                     instructions.append(step.get("instruction", ""))
         print(instructions)
         return JsonResponse(instructions, safe=False)
+    
+@csrf_exempt
+@cache_page(60 * 60)
+def get_all_trails(request):
+    """
+    Returns all trails as GeoJSON with:
+     - geometry = 'route'
+     - properties = ['object_id', 'activity', 'length_km', 'difficulty']
+    """
+    if request.method == "GET":
+        trails_qs = Trail.objects.all()
+        
+        geojson_data = serialize(
+            'geojson',
+            trails_qs,
+            geometry_field='route', 
+            fields=('object_id', 'name', 'activity', 'length_km', 'difficulty')
+        )
+        
+        return HttpResponse(geojson_data, content_type='application/json')
