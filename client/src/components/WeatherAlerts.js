@@ -41,7 +41,7 @@ const WeatherAlerts = ({ latitude, longitude }) => {
         <div className="weather-alerts">
             {alerts.length > 0 && (
                 <div style={{ marginTop: '20px' }}>
-                    <h3>Weather Alerts</h3>
+                    <h2>Weather Alerts</h2>
                     {alerts.map((alert, index) => (
                         <div
                             key={index}
