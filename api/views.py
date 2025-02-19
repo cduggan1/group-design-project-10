@@ -87,9 +87,11 @@ def get_address(request):
         data = json.loads(response.text)
         coordinates = data["response"]["features"][0]["geometry"]["coordinates"]
         longitude, latitude = coordinates
+        address = data["response"]["features"][0]["properties"]["label"]
 
         values = []
-        values.append({"longitude": longitude, "latitude": latitude})
+
+        values.append({"longitude": longitude, "latitude": latitude, "address": address})
         return JsonResponse(values, safe=False)
     
 def get_directions(request):

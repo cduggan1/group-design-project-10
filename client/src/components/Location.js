@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from "react";
 
-const Location = ({ updateLocation, initialCoordinates }) => {
+const Location = ({ updateLocation, initialLocation }) => {
   // State variables for storing input values and fetched data
   const BASE_URL = process.env.REACT_APP_API_URL;
-  const [address, setAddress] = useState(""); // Stores user-input address
-  const [coordinates, setCoordinates] = useState(initialCoordinates || null); // Stores fetched coordinates
+  const [query_address, setQueryAddress] = useState(""); // Stores user-input address
+  const [location, setLocation] = useState(initialLocation || null); // Stores fetched coordinates
   const [error, setError] = useState(""); // Stores error messages
 
   // Effect to set the initial coordinates from the parent component
   useEffect(() => {
-    if (initialCoordinates) {
-      setCoordinates(initialCoordinates); // Set the coordinates if passed from the parent
+    if (initialLocation) {
+      setLocation(initialLocation); // Set the coordinates if passed from the parent
     }
-  }, [initialCoordinates]);
+  }, [initialLocation]);
 
   // Function to fetch coordinates from an address
   const fetchCoordinates = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/address/?address=${address}`);
+      const response = await fetch(`${BASE_URL}/api/address/?address=${query_address}`);
       if (!response.ok) {
         throw new Error("Failed to fetch address");
       }
       const data = await response.json();
-      setCoordinates(data[0]); // Store the fetched coordinates
+      setLocation(data[0]); // Store the fetched coordinates
       setError(""); // Clear error message if successful
 
       // Update latitude and longitude in parent component
-      updateLocation(data[0].latitude, data[0].longitude); // Pass coordinates to parent component
+      updateLocation(data[0].latitude, data[0].longitude, data[0].address); // Pass coordinates to parent component
     } catch (err) {
       setError("Failed to fetch coordinates");
-      setCoordinates(null);
+      setLocation(null);
     }
   };
 
@@ -41,14 +41,14 @@ const Location = ({ updateLocation, initialCoordinates }) => {
         <input
           type="text"
           placeholder="Address"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
+          value={query_address}
+          onChange={(e) => setQueryAddress(e.target.value)}
         />
         <button onClick={fetchCoordinates}>Get Coordinates</button>
 
         {/* Display coordinates if set */}
-        {coordinates ? (
-          <p>At {coordinates.latitude}, {coordinates.longitude}</p>
+        {location ? (
+          <p>Current location: {location.address}<br />{location.latitude}, {location.longitude}</p>
         ) : (
           <p>No location set</p>
         )}

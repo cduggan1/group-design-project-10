@@ -9,10 +9,11 @@ function App() {
     const [location, setLocation] = useState({
       latitude: null,
       longitude: null,
+      adr: null,
     });
     
-    const updateLocation = (lat, lon) => {
-      setLocation({ latitude: lat, longitude: lon });
+    const updateLocation = (lat, lon, adr) => {
+      setLocation({ latitude: lat, longitude: lon , address: adr});
     };
     
     return (
@@ -30,7 +31,7 @@ function App() {
                 <Routes>
                     <Route 
                         path="/location" 
-                        element={<Location updateLocation={updateLocation} initialCoordinates={location} />} 
+                        element={<Location updateLocation={updateLocation} initialLocation={location} />} 
                     />
                     <Route 
                         path="/" 
