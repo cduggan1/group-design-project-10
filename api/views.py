@@ -1,12 +1,19 @@
-from django.shortcuts import render
 import requests
 import platform
 import xml.etree.ElementTree as ET
 import json
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
+
+from django.shortcuts import render
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import cache_page
+from django.core.serializers import serialize
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
 from django.conf import settings
+
+from .models import Trail
 
 @csrf_exempt
 def get_weather(request):
@@ -101,3 +108,63 @@ def get_directions(request):
                     instructions.append(step.get("instruction", ""))
         print(instructions)
         return JsonResponse(instructions, safe=False)
+    
+@csrf_exempt
+@cache_page(60 * 60)
+def get_all_trails(request):
+    """
+    Returns all trails as GeoJSON with:
+     - geometry = 'route'
+     - properties = ['object_id', 'activity', 'length_km', 'difficulty']
+    """
+    if request.method == "GET":
+        trails_qs = Trail.objects.all()
+        
+        geojson_data = serialize(
+            'geojson',
+            trails_qs,
+            geometry_field='route', 
+            fields=('object_id', 'name', 'activity', 'length_km', 'difficulty')
+        )
+        
+        return HttpResponse(geojson_data, content_type='application/json')
+    
+@csrf_exempt
+def get_top_trails_near_location(request):
+    """
+    Returns the top 5 trails nearest to a given location.
+    
+    GET parameters:
+      - lat: latitude
+      - lon: longitude
+      
+    For each trail, we compute the distance from the given point to its
+    'route' field (the closest distance) and return the entire DB object
+    (all fields) plus the computed distance.
+    """
+    if request.method != "GET":
+        return JsonResponse({"error": "GET method required"}, status=400)
+
+    lat = request.GET.get("lat")
+    lon = request.GET.get("lon")
+    if not lat or not lon:
+        return JsonResponse({"error": "Both lat and lon parameters are required."}, status=400)
+
+    try:
+        lat = float(lat)
+        lon = float(lon)
+    except ValueError:
+        return JsonResponse({"error": "Invalid lat or lon values."}, status=400)
+
+    user_point = Point(lon, lat, srid=4326)
+
+    trails = Trail.objects.annotate(distance=Distance("route", user_point))\
+                          .order_by("distance")[:5]
+
+    geojson_str = serialize("geojson", trails, geometry_field="route")
+    geojson_data = json.loads(geojson_str)
+
+    for feature, trail in zip(geojson_data["features"], trails):
+        feature["properties"]["distance_m"] = trail.distance.m
+
+    return HttpResponse(json.dumps(geojson_data), content_type="application/json")
