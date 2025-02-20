@@ -24,6 +24,9 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
   const [weatherData, setWeatherData] = useState(null);
   const [solarData, setSolarData] = useState(null);
   const [error, setError] = useState("");
+  const [trails, setTrails] = useState(null); // Stores fetched weather data
+  const [topTrails, setTopTrails] = useState(null); // Stores fetched weather data
+
 
   // Function to fetch weather data based on latitude and longitude
   const fetchWeather = async () => {
@@ -39,37 +42,7 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
       setError("Failed to fetch weather data");
       setWeatherData(null);
     }
-  };
-  
-const Weather = () => {
-    // State variables for storing input values and fetched data
-    const [latitude, setLatitude] = useState(""); // Stores latitude value
-    const [longitude, setLongitude] = useState(""); // Stores longitude value
-    const [weatherData, setWeatherData] = useState(null); // Stores fetched weather data
-    const [trails, setTrails] = useState(null); // Stores fetched weather data
-    const [topTrails, setTopTrails] = useState(null); // Stores fetched weather data
-    const [address, setAddress] = useState(""); // Stores user-input address
-    const [coordinates, setCoordinates] = useState(null); // Stores fetched coordinates
-    const [directions, setDirections] = useState(null); // Stores fetched directions
-    const [start, setStart] = useState(""); // Stores start location for directions
-    const [destination, setDestination] = useState(""); // Stores destination for directions
-    const [error, setError] = useState(""); // Stores error messages
-
-    // Function to fetch weather data based on latitude and longitude
-    const fetchWeather = async () => {
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/api/weather/?lat=${latitude}&lon=${longitude}`);
-            if (!response.ok) {
-                throw new Error("Failed to fetch weather data");
-            }
-            const data = await response.json();
-            setWeatherData(data[0]); // Store the fetched weather data
-            setError(""); // Clear error message if successful
-        } catch (err) {
-            setError("Failed to fetch weather data");
-            setWeatherData(null);
-        }
-    };
+    }
 
     const fetchAllTrails = async () => {
         try {
@@ -101,24 +74,6 @@ const Weather = () => {
         }
     };
 
-    // Function to fetch coordinates from an address
-    const fetchCoordinates = async () => {
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/api/address/?address=${address}`);
-            if (!response.ok) {
-                throw new Error("Failed to fetch address");
-            }
-            const data = await response.json();
-            setCoordinates(data[0]); // Store the fetched coordinates
-            setLatitude(data[0].latitude); // Update latitude state
-            setLongitude(data[0].longitude); // Update longitude state
-            setStart(`${data[0].latitude}, ${data[0].longitude}`); // Update start location
-            setError(""); // Clear error message if successful
-        } catch (err) {
-            setError("Failed to fetch coordinates");
-            setCoordinates(null);
-        }
-    };
 
 
   const fetchSolar = async () => {
@@ -194,7 +149,7 @@ const Weather = () => {
         <input type="text" placeholder="Latitude" value={latitude} readOnly />
         <input type="text" placeholder="Longitude" value={longitude} readOnly />
         <button onClick={() => { fetchSolar(); fetchWeather();}}>Get Weather</button>
-                             <button onClick={fetchTopTrails}>Get Trails</button>
+        <button onClick={fetchTopTrails}>Get 5 closest Trails</button>
 
       {topTrails && (
                 <div>
@@ -317,6 +272,6 @@ const Weather = () => {
       )}
     </div>
   );
-};
+    }
 
 export default Weather;

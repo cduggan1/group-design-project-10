@@ -81,17 +81,16 @@ WSGI_APPLICATION = 'weather.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.getenv('DATABASE_NAME', 'weather_db'),
-        'USER': os.getenv('DATABASE_USER', 'postgres'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'postgres'),
-        'HOST': os.getenv('DATABASE_HOST', 'db'),
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'disable',  # Disable SSL requirement
-        },
+        'NAME': os.getenv('DATABASE_NAME', 'default_db_name'),
+        'USER': os.getenv('DATABASE_USER', 'default_user'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'default_password'),
+        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+        'OPTIONS': {'sslmode': os.getenv('DATABASE_SSLMODE', 'disable')},
     }
 }
 

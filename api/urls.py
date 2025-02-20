@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import *
+from .views import get_weather, get_address, get_directions, get_weather_alerts, get_solar, get_all_trails, get_top_trails_near_location
 
 urlpatterns = [
     path('weather/', get_weather),
