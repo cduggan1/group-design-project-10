@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents, Polyline} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import React, { useState} from "react";
 import L from "leaflet"; // Import the Leaflet library
@@ -15,6 +15,7 @@ const defaultIcon = new L.Icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
 });
+
 
 const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
@@ -39,6 +40,85 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
       setWeatherData(null);
     }
   };
+  
+const Weather = () => {
+    // State variables for storing input values and fetched data
+    const [latitude, setLatitude] = useState(""); // Stores latitude value
+    const [longitude, setLongitude] = useState(""); // Stores longitude value
+    const [weatherData, setWeatherData] = useState(null); // Stores fetched weather data
+    const [trails, setTrails] = useState(null); // Stores fetched weather data
+    const [topTrails, setTopTrails] = useState(null); // Stores fetched weather data
+    const [address, setAddress] = useState(""); // Stores user-input address
+    const [coordinates, setCoordinates] = useState(null); // Stores fetched coordinates
+    const [directions, setDirections] = useState(null); // Stores fetched directions
+    const [start, setStart] = useState(""); // Stores start location for directions
+    const [destination, setDestination] = useState(""); // Stores destination for directions
+    const [error, setError] = useState(""); // Stores error messages
+
+    // Function to fetch weather data based on latitude and longitude
+    const fetchWeather = async () => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/weather/?lat=${latitude}&lon=${longitude}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch weather data");
+            }
+            const data = await response.json();
+            setWeatherData(data[0]); // Store the fetched weather data
+            setError(""); // Clear error message if successful
+        } catch (err) {
+            setError("Failed to fetch weather data");
+            setWeatherData(null);
+        }
+    };
+
+    const fetchAllTrails = async () => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/activities/trails/all`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch trail data");
+            }
+            const data = await response.json();
+            setTrails(data); // Store the fetched weather data
+            setError(""); // Clear error message if successful
+        } catch (err) {
+            setError("Failed to fetch trail data");
+            setTrails(null);
+        }
+    };
+
+    const fetchTopTrails = async () => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/activities/trails/top/?lat=${latitude}&lon=${longitude}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch trail data");
+            }
+            const data = await response.json();
+            setTopTrails(data); // Store the fetched weather data
+            setError(""); // Clear error message if successful
+        } catch (err) {
+            setError("Failed to fetch trail data");
+            setTopTrails(null);
+        }
+    };
+
+    // Function to fetch coordinates from an address
+    const fetchCoordinates = async () => {
+        try {
+            const response = await fetch(`http://127.0.0.1:8000/api/address/?address=${address}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch address");
+            }
+            const data = await response.json();
+            setCoordinates(data[0]); // Store the fetched coordinates
+            setLatitude(data[0].latitude); // Update latitude state
+            setLongitude(data[0].longitude); // Update longitude state
+            setStart(`${data[0].latitude}, ${data[0].longitude}`); // Update start location
+            setError(""); // Clear error message if successful
+        } catch (err) {
+            setError("Failed to fetch coordinates");
+            setCoordinates(null);
+        }
+    };
 
 
   const fetchSolar = async () => {
@@ -75,6 +155,17 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
         <WeatherAlerts latitude={latitude} longitude={longitude} />
       </div>
 
+     <button onClick={fetchAllTrails}>Get Trails</button>
+              {trails && (
+              <div>
+                  <div>
+                      {trails.features.map((trail, index) => (
+                          <p key={index}>{trail.properties.name}</p>
+                      ))}
+                  </div>
+              </div>
+              )}
+
       <div style={{ display: "flex", justifyContent: "space-between", width: "100%", gap: "30px" }}>
     {/* Weather Section - Displays weather forecast for selected coordinates */}
     <div style={{ flex: 1, textAlign: "center" }}>
@@ -86,12 +177,35 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           <LocationMarker />
+              
+             {/* Map Trail Routes */}
+                        {topTrails && topTrails.features.map((trail, index) => {
+                            const polylineCoords = trail.geometry.coordinates.map(([lng, lat]) => [lat, lng]); // Convert to Leaflet format
+
+                            return (
+                                <Polyline key={index} positions={polylineCoords} color="blue" weight={5}>
+                                </Polyline>
+                            );
+                        })}
         </MapContainer>
+        
       </div>
       <div>
         <input type="text" placeholder="Latitude" value={latitude} readOnly />
         <input type="text" placeholder="Longitude" value={longitude} readOnly />
         <button onClick={() => { fetchSolar(); fetchWeather();}}>Get Weather</button>
+                             <button onClick={fetchTopTrails}>Get Trails</button>
+
+      {topTrails && (
+                <div>
+                    <div>
+                        {topTrails.features.map((trail, index) => (
+                            <p key={index}>{trail.properties.name}</p>
+                        ))}
+                    </div>
+                </div>
+                )}
+
       </div>
       {weatherData && solarData &&
       <>
@@ -193,7 +307,6 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
       )}
     </div>
   </div>
-
 
 
       {/* Error Message Display */}
