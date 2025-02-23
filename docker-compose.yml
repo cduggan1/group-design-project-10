@@ -3,11 +3,11 @@ version: "3.8"
 services:
   backend:
     build:
-      context: .                  
-      dockerfile: Dockerfile      
+      context: .
+      dockerfile: Dockerfile
     container_name: weather_backend
     ports:
-      - "8000:8000"
+      - "9000:9000"
     volumes:
       - ./weather:/app/weather
       - ./manage.py:/app/manage.py
@@ -18,7 +18,7 @@ services:
     build: ./client
     container_name: weather_frontend
     ports:
-      - "3000:3000"
+      - "4000:3000"
     volumes:
       - ./client:/app
       - /app/node_modules

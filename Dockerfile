@@ -10,9 +10,10 @@ RUN pip install --upgrade pip
 RUN pip install -r /app/requirements.txt
 
 COPY . /app
+COPY ../.env /app/.env
 
 RUN python manage.py collectstatic --noinput
 
-EXPOSE 8000
+EXPOSE 9000
 
-CMD ["gunicorn", "--timeout", "120", "--chdir", "/app/weather", "--bind", "0.0.0.0:8000", "weather.wsgi"]
+CMD ["gunicorn", "--timeout", "120", "--chdir", "/app/weather", "--bind", "0.0.0.0:9000", "weather.wsgi"]
