@@ -17,19 +17,19 @@ const defaultIcon = new L.Icon({
 });
 
 
-const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
+const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestination}) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [latitude, setLatitude] = useState(initialLat);
   const [longitude, setLongitude] = useState(initialLon);
   const [weatherData, setWeatherData] = useState(null);
   const [solarData, setSolarData] = useState(null);
   const [error, setError] = useState("");
-  const [trails, setTrails] = useState(null); 
+  const [trails, setTrails] = useState(null);
   const [trailWeather, setTrailWeather] = useState(null); 
   const [topTrails, setTopTrails] = useState(null);
 
   const now = new Date();
-  const localTime = new Date(now.getTime() + 60000).toISOString().split('.')[0];
+  const localTime = new Date(now.getTime() + 3600000).toISOString().split('.')[0];
   console.log(localTime)
 
   // Function to fetch weather data based on latitude and longitude
@@ -110,6 +110,8 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
     }
   };
 
+
+
   // Function to handle map click events and update latitude & longitude
   function LocationMarker() {
     useMapEvents({
@@ -162,6 +164,10 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
             {topTrails.features.map((trail, index) => (
               <details key={index} style={{ marginBottom: "10px" }}>
                 <summary>{trail.properties.name}</summary>
+                <button onClick={() => updateDestination(`${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`)}>
+                  Set as destination
+                </button>
+                {trail.geometry.coordinates[0]}
                 <div style={{ paddingLeft: "20px" }}>
                   If starting the trail now:
                   <div style={{ listStyleType: "none", paddingLeft: "0" }}>
@@ -177,10 +183,11 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
                       
                       return (
                         <div key={segmentIndex+1}>
-                            Weather at {formattedTime}:
+                            Weather at:
                             <table align = "centre">
                               <tbody>                             
                                 <tr>
+                                  <th>{formattedTime}:</th>
                                   <th>{segment.weather.rain}mm precipitation</th>
                                   <th>{segment.weather.temperature}°C</th>
                                   <th>{segment.weather.cloudiness}% cloud cover</th>

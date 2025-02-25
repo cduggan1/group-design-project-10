@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 
-const Directions = ({ latitude, longitude}) => {
+const Directions = ({ latitude, longitude, trailDestination}) => {
   // State variables for storing input values and fetched data
   const BASE_URL = process.env.REACT_APP_API_URL;
 
   const [start, setStart] = useState(`${latitude}, ${longitude}`); // Start with the current latitude and longitude as default
-  const [destination, setDestination] = useState(""); // Destination input value
+  const [destination, setDestination] = useState(trailDestination || "");
   const [directions, setDirections] = useState(null); // Stores fetched directions
   const [error, setError] = useState(""); // Stores error messages
+
 
   // Fetch directions from API
   const fetchDirections = async () => {
@@ -24,6 +25,13 @@ const Directions = ({ latitude, longitude}) => {
       setDirections(null);
     }
   };
+
+  useEffect(() => {
+    if (trailDestination) {
+      setDestination(trailDestination);
+    }
+  }, [trailDestination]);
+  
 
   // Effect to update start location if latitude and longitude props change
   useEffect(() => {
