@@ -125,3 +125,38 @@ def get_top_trails_near_location(request):
         feature["properties"]["distance_m"] = trail.distance.m
 
     return HttpResponse(json.dumps(geojson_data), content_type="application/json")
+    
+
+@cache_page(3600)
+def get_location_suggestions(request):
+    if request.method == "GET":
+        query = request.GET.get("query")
+
+        if not query or len(query) < 2:
+            return JsonResponse([], safe=False)
+
+        api_key = settings.LOCATION_API_KEY
+        api_url = f"https://api.geocodify.com/v2/autocomplete?api_key={api_key}&q={query}"
+        
+        try:
+            # Set a timeout to prevent long-running requests
+            response = requests.get(api_url, timeout=2)
+            
+            if response.status_code != 200:
+                return JsonResponse({"error": "Failed to fetch location suggestions"}, status=response.status_code)
+
+            data = json.loads(response.text)
+            suggestions = []
+            
+            for feature in data["response"]["features"]:
+                suggestions.append({
+                    "label": feature["properties"]["label"],
+                    "longitude": feature["geometry"]["coordinates"][0],
+                    "latitude": feature["geometry"]["coordinates"][1]
+                })
+                
+            return JsonResponse(suggestions, safe=False)
+        except requests.exceptions.Timeout:
+            return JsonResponse({"error": "Request timed out"}, status=408)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
