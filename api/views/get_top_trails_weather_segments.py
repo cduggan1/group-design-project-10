@@ -104,7 +104,6 @@ def get_segments_for_trail(trail, base_dt):
         })
     return segments_list
 
-
 def trail_to_geojson_feature(trail, segments_list):
     """
     Converts a Trail object (with its segments) to a GeoJSON feature.
@@ -128,7 +127,6 @@ def trail_to_geojson_feature(trail, segments_list):
         }
     }
     return feature
-
 
 @csrf_exempt
 def get_top_trails_weather_segments(request):

@@ -48,7 +48,7 @@ const Location = ({ updateLocation, initialLocation }) => {
 
         {/* Display coordinates if set */}
         {location ? (
-          <p>Current location: {location.address}<br />{location.latitude}, {location.longitude}</p>
+          <p>Current location: {location.address}<br />{location.latitude} {location.longitude}</p>
         ) : (
           <p>No location set</p>
         )}

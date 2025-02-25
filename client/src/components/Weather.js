@@ -24,9 +24,14 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
   const [weatherData, setWeatherData] = useState(null);
   const [solarData, setSolarData] = useState(null);
   const [error, setError] = useState("");
-  const [trails, setTrails] = useState(null); // Stores fetched weather data
-  const [topTrails, setTopTrails] = useState(null); // Stores fetched weather data
+  const [trails, setTrails] = useState(null); 
+  const [trailWeather, setTrailWeather] = useState(null); 
+  const [topTrails, setTopTrails] = useState(null);
 
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const localTime = new Date(now.getTime() - offset * 60000).toISOString().split('.')[0];
+  console.log(localTime)
 
   // Function to fetch weather data based on latitude and longitude
   const fetchWeather = async () => {
@@ -44,37 +49,51 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
     }
     }
 
-    const fetchAllTrails = async () => {
-        try {
-            const response = await fetch(`${BASE_URL}/api/activities/trails/all`);
-            if (!response.ok) {
-                throw new Error("Failed to fetch trail data");
-            }
-            const data = await response.json();
-            setTrails(data); // Store the fetched weather data
-            setError(""); // Clear error message if successful
-        } catch (err) {
-            setError("Failed to fetch trail data");
-            setTrails(null);
+  const fetchTrailWeather = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/activities/trails/top/weather-segments/?lat=${latitude}&lon=${longitude}&datetime=${localTime}`);      
+      if (!response.ok) {
+          throw new Error("Failed to fetch trail weather data");
+      }
+      const data = await response.json();
+      setTrailWeather(data); // Store the fetched weather data
+      setError(""); // Clear error message if successful
+    } catch (err) {
+        setError("Failed to fetch trail weather data");
+        setTopTrails(null);
+    }
+  }
+
+
+  const fetchAllTrails = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/activities/trails/all`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch trail data");
         }
-    };
+        const data = await response.json();
+        setTrails(data); // Store the fetched weather data
+        setError(""); // Clear error message if successful
+    } catch (err) {
+        setError("Failed to fetch trail data");
+        setTrails(null);
+    }
+  };
 
-    const fetchTopTrails = async () => {
-        try {
-            const response = await fetch(`${BASE_URL}/api/activities/trails/top/?lat=${latitude}&lon=${longitude}`);
-            if (!response.ok) {
-                throw new Error("Failed to fetch trail data");
-            }
-            const data = await response.json();
-            setTopTrails(data); // Store the fetched weather data
-            setError(""); // Clear error message if successful
-        } catch (err) {
-            setError("Failed to fetch trail data");
-            setTopTrails(null);
+  const fetchTopTrails = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/activities/trails/top/?lat=${latitude}&lon=${longitude}`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch trail data");
         }
-    };
-
-
+        const data = await response.json();
+        setTopTrails(data); // Store the fetched weather data
+        setError(""); // Clear error message if successful
+    } catch (err) {
+        setError("Failed to fetch trail data");
+        setTopTrails(null);
+    }
+  };
 
   const fetchSolar = async () => {
     try {
@@ -109,18 +128,6 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
       <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
         <WeatherAlerts latitude={latitude} longitude={longitude} />
       </div>
-
-     <button onClick={fetchAllTrails}>Get Trails</button>
-              {trails && (
-              <div>
-                  <div>
-                      {trails.features.map((trail, index) => (
-                          <p key={index}>{trail.properties.name}</p>
-                      ))}
-                  </div>
-              </div>
-              )}
-
       <div style={{ display: "flex", justifyContent: "space-between", width: "100%", gap: "30px" }}>
     {/* Weather Section - Displays weather forecast for selected coordinates */}
     <div style={{ flex: 1, textAlign: "center" }}>
@@ -149,18 +156,29 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
         <input type="text" placeholder="Latitude" value={latitude} readOnly />
         <input type="text" placeholder="Longitude" value={longitude} readOnly />
         <button onClick={() => { fetchSolar(); fetchWeather();}}>Get Weather</button>
-        <button onClick={fetchTopTrails}>Get 5 closest Trails</button>
+        <button onClick={() => { fetchTopTrails(); fetchTrailWeather();}}>Get 5 closest Trails</button>
 
       {topTrails && (
-                <div>
-                    <div>
-                        {topTrails.features.map((trail, index) => (
-                            <p key={index}>{trail.properties.name}</p>
-                        ))}
-                    </div>
-                </div>
-                )}
+        <div>
+            <div>
+                {topTrails.features.map((trail, index) => (
+                    <p key={index}>{trail.properties.name}</p>
+                ))}
+            </div>
+        </div>
+        )
+      }
 
+      {trailWeather && (
+        <div>
+          {trailWeather.features[0].properties.segments.map((segment, index) => (
+            <div key={index}>
+              Rain: {segment.weather.rain}
+            </div>
+          ))}
+        </div>
+      )}
+      
       </div>
       {weatherData && solarData &&
       <>
@@ -189,8 +207,8 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
                 <td>Sunset</td>
               </tr>
               <tr>
-                <td>{solarData.rise}</td>
-                <td>{solarData.set}</td>
+                <td>{solarData[0].rise}</td>
+                <td>{solarData[0].set}</td>
               </tr>
           </tbody>
         </table>
