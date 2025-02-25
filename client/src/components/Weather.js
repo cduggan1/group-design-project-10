@@ -29,8 +29,7 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
   const [topTrails, setTopTrails] = useState(null);
 
   const now = new Date();
-  const offset = now.getTimezoneOffset();
-  const localTime = new Date(now.getTime() - offset * 60000).toISOString().split('.')[0];
+  const localTime = new Date(now.getTime() + 60000).toISOString().split('.')[0];
   console.log(localTime)
 
   // Function to fetch weather data based on latitude and longitude
@@ -161,19 +160,45 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
         {topTrails && trailWeather && (
           <div>
             {topTrails.features.map((trail, index) => (
-              <div key={index}>
-                <p>{trail.properties.name}</p>
-                <div>
-                  {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => (
-                    <div key={segmentIndex}>
-                      Rain: {segment.weather.rain}
-                    </div>
-                  ))}
+              <details key={index} style={{ marginBottom: "10px" }}>
+                <summary>{trail.properties.name}</summary>
+                <div style={{ paddingLeft: "20px" }}>
+                  If starting the trail now:
+                  <div style={{ listStyleType: "none", paddingLeft: "0" }}>
+                    {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
+                      const isoString = segment.weather.forecast_time;
+                      const date = new Date(isoString);
+                      const timeString = date.toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: true,
+                      });
+                      const formattedTime = timeString.replace(":00", "");
+                      
+                      return (
+                        <div key={segmentIndex+1}>
+                            Weather at {formattedTime}:
+                            <table align = "centre">
+                              <tbody>                             
+                                <tr>
+                                  <th>{segment.weather.rain}mm precipitation</th>
+                                  <th>{segment.weather.temperature}°C</th>
+                                  <th>{segment.weather.cloudiness}% cloud cover</th>
+                                  <th>{segment.weather.wind_speed}km/h {segment.weather.wind_direction}</th>
+                                </tr>
+                              </tbody>
+                            </table>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              </details>
             ))}
           </div>
         )}
+
+
       
       </div>
       {weatherData && solarData &&
