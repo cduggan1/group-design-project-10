@@ -29,12 +29,18 @@ class Trail(models.Model):
         return self.name or f"Trail {self.object_id}"
 
 
-class TestGeometry(models.Model):
-    point = gis_models.PointField()
+class TrailSegment(models.Model):
+    trail = models.ForeignKey(Trail, on_delete=models.CASCADE, related_name='segments')
+    segment_index = models.IntegerField()
+    start_time_offset = models.DurationField()
+    start_distance_km = models.FloatField()
+    end_distance_km = models.FloatField()
+    segment_point = models.PointField(geography=True)
+    segment_line = models.LineStringField(geography=True)
 
-    class Meta:
-        verbose_name_plural = 'Test Geometries'
-        verbose_name = 'Test Geometry' 
+    def __str__(self):
+        return f"{self.trail} - Segment {self.segment_index}"
+
 
 class WeatherAlert(models.Model):
     SEVERITY_CHOICES = [

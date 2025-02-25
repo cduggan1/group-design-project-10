@@ -14,9 +14,8 @@ from django.contrib.gis.db.models.functions import Distance
 from django.conf import settings
 from django.contrib.gis.measure import D
 from django.contrib.gis.geos import Point
-from .models import WeatherAlert
+from ..models import WeatherAlert, Trail
 
-from .models import Trail
 
 @csrf_exempt
 def get_weather(request):
