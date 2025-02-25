@@ -158,26 +158,22 @@ const Weather = ({ latitude: initialLat, longitude: initialLon }) => {
         <button onClick={() => { fetchSolar(); fetchWeather();}}>Get Weather</button>
         <button onClick={() => { fetchTopTrails(); fetchTrailWeather();}}>Get 5 closest Trails</button>
 
-      {topTrails && (
-        <div>
-            <div>
-                {topTrails.features.map((trail, index) => (
-                    <p key={index}>{trail.properties.name}</p>
-                ))}
-            </div>
-        </div>
-        )
-      }
-
-      {trailWeather && (
-        <div>
-          {trailWeather.features[0].properties.segments.map((segment, index) => (
-            <div key={index}>
-              Rain: {segment.weather.rain}
-            </div>
-          ))}
-        </div>
-      )}
+        {topTrails && trailWeather && (
+          <div>
+            {topTrails.features.map((trail, index) => (
+              <div key={index}>
+                <p>{trail.properties.name}</p>
+                <div>
+                  {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => (
+                    <div key={segmentIndex}>
+                      Rain: {segment.weather.rain}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       
       </div>
       {weatherData && solarData &&
