@@ -12,6 +12,8 @@ services:
       - ./weather:/app/weather
       - ./manage.py:/app/manage.py
       - ./api:/app/api
+    env_file:
+      - .env
     restart: always
 
   frontend:
@@ -24,6 +26,8 @@ services:
       - /app/node_modules
     environment:
       - WATCHPACK_POLLING=true
+    env_file:
+      - .env
     depends_on:
       - backend
     restart: always
