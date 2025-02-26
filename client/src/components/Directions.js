@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 
-const Directions = ({ latitude, longitude}) => {
+const Directions = ({ latitude, longitude, trailAdr}) => {
   // State variables for storing input values and fetched data
   const BASE_URL = process.env.REACT_APP_API_URL;
 
   const [start, setStart] = useState(`${latitude}, ${longitude}`); // Start with the current latitude and longitude as default
-  const [destination, setDestination] = useState(""); // Destination input value
+  const [destination, setDestination] = useState(`${trailAdr}`);
   const [directions, setDirections] = useState(null); // Stores fetched directions
   const [error, setError] = useState(""); // Stores error messages
+
 
   // Fetch directions from API
   const fetchDirections = async () => {
@@ -25,6 +26,9 @@ const Directions = ({ latitude, longitude}) => {
     }
   };
 
+  useEffect(() => {setDestination(`${trailAdr}`)});
+  
+
   // Effect to update start location if latitude and longitude props change
   useEffect(() => {
     setStart(`${latitude}, ${longitude}`); // Update start location with current latitude and longitude
@@ -34,7 +38,6 @@ const Directions = ({ latitude, longitude}) => {
     <div style={{ display: "flex", justifyContent: "center", gap: "30px", padding: "20px" }}>
       <div style={{ flex: 1, textAlign: "center" }}>
         <h2>Directions</h2>
-
         {/* "From" Location input */}
         <input
           type="text"
@@ -55,9 +58,9 @@ const Directions = ({ latitude, longitude}) => {
         <button onClick={fetchDirections}>Get Directions</button>
 
         {/* Predefined destinations */}
-        <button onClick={() => setDestination("53.377,-6.073")}>Get Directions to Howth</button>
+        {/*<button onClick={() => setDestination("53.377,-6.073")}>Get Directions to Howth</button>
         <button onClick={() => setDestination("53.144, -6.155")}>Get Directions to the Sugar Loaf</button>
-        <button onClick={() => setDestination("53.141, -6.56")}>Get Directions to the Blessington Greenway</button>
+        <button onClick={() => setDestination("53.141, -6.56")}>Get Directions to the Blessington Greenway</button>*/}
 
         {/* Display directions if available */}
         {directions && directions.length > 0 && (

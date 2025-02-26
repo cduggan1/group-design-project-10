@@ -1,13 +1,20 @@
 from django.urls import path
 from .views.views import (
-    get_weather, 
     get_address, 
     get_directions, 
+    get_all_trails, 
+    get_top_trails_near_location,
+    get_top_cycle_trails_near_location,
+    get_top_walking_trails_near_location,
+    get_location_suggestions
+)
+
+from .views.weather import (
+    get_weather, 
     get_weather_alerts, 
     get_solar, 
-    get_all_trails, 
-    get_top_trails_near_location
 )
+
 from .views.get_top_trails_weather_segments import get_top_trails_weather_segments
 
 urlpatterns = [
@@ -18,5 +25,8 @@ urlpatterns = [
     path('weather-alerts/', get_weather_alerts),
     path('activities/trails/all', get_all_trails),
     path('activities/trails/top/', get_top_trails_near_location),
+    path('activities/trails/top/cycles/', get_top_cycle_trails_near_location),
+    path('activities/trails/top/walks/', get_top_walking_trails_near_location),
     path('activities/trails/top/weather-segments/', get_top_trails_weather_segments),
+    path('location-suggestions/', get_location_suggestions),
 ]
