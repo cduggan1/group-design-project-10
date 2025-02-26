@@ -27,6 +27,8 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
   const [trails, setTrails] = useState(null);
   const [trailWeather, setTrailWeather] = useState(null); 
   const [topTrails, setTopTrails] = useState(null);
+  const [topCycleTrails, setTopCycleTrails] = useState(null);
+  const [topWalkingTrails, setTopWalkingTrails] = useState(null);
 
   const now = new Date();
   const localTime = new Date(now.getTime() + 3600000).toISOString().split('.')[0];
@@ -46,11 +48,11 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
       setError("Failed to fetch weather data");
       setWeatherData(null);
     }
-    }
+  }
 
-  const fetchTrailWeather = async () => {
+  const fetchTrailWeather = async (activity) => {
     try {
-      const response = await fetch(`${BASE_URL}/api/activities/trails/top/weather-segments/?lat=${latitude}&lon=${longitude}&datetime=${localTime}`);      
+      const response = await fetch(`${BASE_URL}/api/activities/trails/top/weather-segments/?lat=${latitude}&lon=${longitude}&datetime=${localTime}&activity_type=${activity}`);
       if (!response.ok) {
           throw new Error("Failed to fetch trail weather data");
       }
@@ -78,6 +80,36 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
     }
   };
 
+  const fetchTopCycleTrails = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/activities/trails/top/cycles/?lat=${latitude}&lon=${longitude}`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch cycle trail data");
+        }
+        const data = await response.json();
+        setTopCycleTrails(data); // Store the fetched weather data
+        setError(""); // Clear error message if successful
+    } catch (err) {
+        setError("Failed to fetch cycle trail data");
+        setTopCycleTrails(null);
+    }
+  };
+
+  const fetchTopWalkingTrails = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/api/activities/trails/top/walks/?lat=${latitude}&lon=${longitude}`);
+        if (!response.ok) {
+            throw new Error("Failed to fetch walking trail data");
+        }
+        const data = await response.json();
+        setTopWalkingTrails(data); // Store the fetched weather data
+        setError(""); // Clear error message if successful
+    } catch (err) {
+        setError("Failed to fetch walking trail data");
+        setTopWalkingTrails(null);
+    }
+  };
+
   const fetchTopTrails = async () => {
     try {
         const response = await fetch(`${BASE_URL}/api/activities/trails/top/?lat=${latitude}&lon=${longitude}`);
@@ -92,6 +124,7 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
         setTopTrails(null);
     }
   };
+
 
   const fetchSolar = async () => {
     try {
@@ -142,14 +175,23 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
               <LocationMarker />
                   
                 {/* Map Trail Routes */}
-                            {topTrails && topTrails.features.map((trail, index) => {
-                                const polylineCoords = trail.geometry.coordinates.map(([lng, lat]) => [lat, lng]); // Convert to Leaflet format
+                  {topCycleTrails && topCycleTrails.features.map((trail, index) => {
+                      const polylineCoords = trail.geometry.coordinates.map(([lng, lat]) => [lat, lng]); // Convert to Leaflet format
 
-                                return (
-                                    <Polyline key={index} positions={polylineCoords} color="blue" weight={5}>
-                                    </Polyline>
-                                );
-                            })}
+                      return (
+                          <Polyline key={index} positions={polylineCoords} color="blue" weight={5}>
+                          </Polyline>
+                      );
+                  })}
+
+                  {topWalkingTrails && topWalkingTrails.features.map((trail, index) => {
+                      const polylineCoords = trail.geometry.coordinates.map(([lng, lat]) => [lat, lng]); // Convert to Leaflet format
+
+                      return (
+                          <Polyline key={index} positions={polylineCoords} color="red" weight={5}>
+                          </Polyline>
+                      );
+                  })}
             </MapContainer>
             
           </div>
@@ -158,7 +200,8 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
             <input type="text" placeholder="Latitude" value={latitude} readOnly />
             <input type="text" placeholder="Longitude" value={longitude} readOnly />
             <button onClick={() => { fetchSolar(); fetchWeather();}}>Get Weather at your location</button>
-            <button onClick={() => { fetchTopTrails(); fetchTrailWeather();}}>Get 5 closest Trails</button>
+            <button onClick={() => { fetchTopCycleTrails(); fetchTrailWeather("Cycling");}}>Get cycling Trails</button>
+            <button onClick={() => { fetchTopWalkingTrails(); fetchTrailWeather("Walking");}}>Get walking Trails</button>
             <div style={{ display: "flex", justifyContent: "space-between", gap: "30px" }}>
               {/* Left Side - Weather and Solar Data */}
                 {weatherData && solarData && (
@@ -198,11 +241,58 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
                 )}
 
                 {/* Right Side - Trail Weather */}
-                {topTrails && trailWeather && (
+                {topCycleTrails && trailWeather && (
                   <div style={{ flex: 1 }}>
                   <div>
                       <h2>Trail Weather</h2>
-                      {topTrails.features.map((trail, index) => (
+                      {topCycleTrails.features.map((trail, index) => (
+                        <details key={index} style={{ marginBottom: "10px" }}>
+                          <summary>{trail.properties.name}</summary>
+                          <button onClick={() => updateDestination(`${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`)}>
+                            Set as destination
+                          </button>
+                          <div style={{ paddingLeft: "20px" }}>
+                            If starting the trail in an hour:
+                            <div style={{ listStyleType: "none", paddingLeft: "0" }}>
+                              {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
+                                const isoString = segment.weather.forecast_time;
+                                const date = new Date(isoString);
+                                const timeString = date.toLocaleTimeString("en-US", {
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                  hour12: true,
+                                });
+                                const formattedTime = timeString.replace(":00", "");
+                                
+                                return (
+                                  <div key={segmentIndex + 1}>
+                                    <table align="center" style={{ width: "100%", borderCollapse: "collapse" }}>
+                                      <tbody>
+                                        <tr>
+                                          <th>{formattedTime}:</th>
+                                          <th>{segment.weather.rain}mm precipitation</th>
+                                          <th>{segment.weather.temperature}°C</th>
+                                          <th>{segment.weather.cloudiness}% cloud cover</th>
+                                          <th>{segment.weather.wind_speed}km/h {segment.weather.wind_direction}</th>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {topWalkingTrails && trailWeather && (
+                  <div style={{ flex: 1 }}>
+                  <div>
+                      <h2>Trail Weather</h2>
+                      {topWalkingTrails.features.map((trail, index) => (
                         <details key={index} style={{ marginBottom: "10px" }}>
                           <summary>{trail.properties.name}</summary>
                           <button onClick={() => updateDestination(`${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`)}>

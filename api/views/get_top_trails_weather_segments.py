@@ -16,6 +16,7 @@ def parse_parameters(request):
     lat = request.GET.get("lat")
     lon = request.GET.get("lon")
     dt_str = request.GET.get("datetime")
+    activity_type = request.GET.get("activity_type")
     if not lat or not lon or not dt_str:
         raise ValueError("lat, lon, and datetime are required.")
     try:
@@ -24,7 +25,7 @@ def parse_parameters(request):
         base_dt = datetime.fromisoformat(dt_str)
     except Exception as e:
         raise ValueError(f"Invalid parameter: {e}")
-    return lat, lon, base_dt
+    return lat, lon, base_dt, activity_type
 
 def fetch_weather_at(lat, lon, target_dt):
     """
@@ -73,12 +74,25 @@ def fetch_weather_at(lat, lon, target_dt):
             return None
     return None
 
-def get_top_trails(user_point, limit=5):
+def get_top_trails(activity_type, user_point, limit=5):
     """
     Retrieve the top `limit` trails nearest to the provided user_point.
     """
+    print(activity_type)
+
+    '''if activity_type == "Cycling":
+        trails = Trail.filter(activity="Cycling") \
+                      .annotate(distance=Distance("route", user_point))\
+                      .order_by("distance")[:limit]
+    
+    elif activity_type == "Walking":
+        trails = Trail.filter(activity="Walking") \
+                      .annotate(distance=Distance("route", user_point))\
+                      .order_by("distance")[:limit]
+
+    else:'''
     trails = Trail.objects.annotate(distance=Distance("route", user_point))\
-                          .order_by("distance")[:limit]
+                              .order_by("distance")[:limit]
     return trails
 
 def get_segments_for_trail(trail, base_dt):
@@ -139,18 +153,18 @@ def get_top_trails_weather_segments(request):
       - lat: latitude
       - lon: longitude
       - datetime: base datetime (ISO 8601 string)
-      
+      - activity_type
     Returns a GeoJSON FeatureCollection.
     """
     if request.method != "GET":
         return JsonResponse({"error": "GET method required"}, status=400)
     try:
-        lat, lon, base_dt = parse_parameters(request)
+        lat, lon, base_dt, activity_type = parse_parameters(request)
     except ValueError as e:
         return JsonResponse({"error": str(e)}, status=400)
     
     user_point = Point(lon, lat, srid=4326)
-    trails = get_top_trails(user_point, limit=5)
+    trails = get_top_trails(activity_type, user_point, limit=5)
     
     features = []
     for trail in trails:

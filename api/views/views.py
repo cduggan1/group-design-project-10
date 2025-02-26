@@ -115,8 +115,9 @@ def get_top_trails_near_location(request):
 
     user_point = Point(lon, lat, srid=4326)
 
-    trails = Trail.objects.annotate(distance=Distance("route", user_point))\
+    trails = Trail.objects.annotate(distance=Distance("route", user_point)) \
                           .order_by("distance")[:5]
+
 
     geojson_str = serialize("geojson", trails, geometry_field="route")
     geojson_data = json.loads(geojson_str)
@@ -126,6 +127,90 @@ def get_top_trails_near_location(request):
 
     return HttpResponse(json.dumps(geojson_data), content_type="application/json")
     
+@csrf_exempt
+def get_top_cycle_trails_near_location(request):
+    """
+    Returns the top 5 cycling trails nearest to a given location.
+    
+    GET parameters:
+      - lat: latitude
+      - lon: longitude
+      
+    For each trail, we compute the distance from the given point to its
+    'route' field (the closest distance) and return the entire DB object
+    (all fields) plus the computed distance.
+    """
+    if request.method != "GET":
+        return JsonResponse({"error": "GET method required"}, status=400)
+
+    lat = request.GET.get("lat")
+    lon = request.GET.get("lon")
+    if not lat or not lon:
+        return JsonResponse({"error": "Both lat and lon parameters are required."}, status=400)
+
+    try:
+        lat = float(lat)
+        lon = float(lon)
+    except ValueError:
+        return JsonResponse({"error": "Invalid lat or lon values."}, status=400)
+
+    user_point = Point(lon, lat, srid=4326)
+
+    trails = Trail.objects.filter(activity="Cycling") \
+                          .annotate(distance=Distance("route", user_point)) \
+                          .order_by("distance")[:5]
+
+
+    geojson_str = serialize("geojson", trails, geometry_field="route")
+    geojson_data = json.loads(geojson_str)
+
+    for feature, trail in zip(geojson_data["features"], trails):
+        feature["properties"]["distance_m"] = trail.distance.m
+
+    return HttpResponse(json.dumps(geojson_data), content_type="application/json")
+
+
+@csrf_exempt
+def get_top_walking_trails_near_location(request):
+    """
+    Returns the top 5 walking trails nearest to a given location.
+    
+    GET parameters:
+      - lat: latitude
+      - lon: longitude
+      
+    For each trail, we compute the distance from the given point to its
+    'route' field (the closest distance) and return the entire DB object
+    (all fields) plus the computed distance.
+    """
+    if request.method != "GET":
+        return JsonResponse({"error": "GET method required"}, status=400)
+
+    lat = request.GET.get("lat")
+    lon = request.GET.get("lon")
+    if not lat or not lon:
+        return JsonResponse({"error": "Both lat and lon parameters are required."}, status=400)
+
+    try:
+        lat = float(lat)
+        lon = float(lon)
+    except ValueError:
+        return JsonResponse({"error": "Invalid lat or lon values."}, status=400)
+
+    user_point = Point(lon, lat, srid=4326)
+
+    trails = Trail.objects.filter(activity="Walking") \
+                          .annotate(distance=Distance("route", user_point)) \
+                          .order_by("distance")[:5]
+
+
+    geojson_str = serialize("geojson", trails, geometry_field="route")
+    geojson_data = json.loads(geojson_str)
+
+    for feature, trail in zip(geojson_data["features"], trails):
+        feature["properties"]["distance_m"] = trail.distance.m
+
+    return HttpResponse(json.dumps(geojson_data), content_type="application/json")
 
 @cache_page(3600)
 def get_location_suggestions(request):
