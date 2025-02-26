@@ -63,7 +63,6 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
     }
   }
 
-
   const fetchAllTrails = async () => {
     try {
         const response = await fetch(`${BASE_URL}/api/activities/trails/all`);
@@ -110,8 +109,6 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
     }
   };
 
-
-
   // Function to handle map click events and update latitude & longitude
   function LocationMarker() {
     useMapEvents({
@@ -125,198 +122,204 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "20px" }}>
+      
       {/* Weather Alerts Section - Now at the top */}
       <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
         <WeatherAlerts latitude={latitude} longitude={longitude} />
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", gap: "30px" }}>
-    {/* Weather Section - Displays weather forecast for selected coordinates */}
-    <div style={{ flex: 1, textAlign: "center" }}>
-      <h2>Weather Forecast</h2>
-      <div style={{ height: "300px", width: "100%", marginBottom: "10px" }}>
-        <MapContainer center={[53.49, -7.562]} zoom={7} style={{ height: "100%", width: "100%" }}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <LocationMarker />
-              
-             {/* Map Trail Routes */}
-                        {topTrails && topTrails.features.map((trail, index) => {
-                            const polylineCoords = trail.geometry.coordinates.map(([lng, lat]) => [lat, lng]); // Convert to Leaflet format
-
-                            return (
-                                <Polyline key={index} positions={polylineCoords} color="blue" weight={5}>
-                                </Polyline>
-                            );
-                        })}
-        </MapContainer>
-        
-      </div>
-      <div>
-        <input type="text" placeholder="Latitude" value={latitude} readOnly />
-        <input type="text" placeholder="Longitude" value={longitude} readOnly />
-        <button onClick={() => { fetchSolar(); fetchWeather();}}>Get Weather</button>
-        <button onClick={() => { fetchTopTrails(); fetchTrailWeather();}}>Get 5 closest Trails</button>
-
-        {topTrails && trailWeather && (
-          <div>
-            {topTrails.features.map((trail, index) => (
-              <details key={index} style={{ marginBottom: "10px" }}>
-                <summary>{trail.properties.name}</summary>
-                <button onClick={() => updateDestination(`${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`)}>
-                  Set as destination
-                </button>
-                <div style={{ paddingLeft: "20px" }}>
-                  If starting the trail now:
-                  <div style={{ listStyleType: "none", paddingLeft: "0" }}>
-                    {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
-                      const isoString = segment.weather.forecast_time;
-                      const date = new Date(isoString);
-                      const timeString = date.toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "numeric",
-                        hour12: true,
-                      });
-                      const formattedTime = timeString.replace(":00", "");
-                      
-                      return (
-                        <div key={segmentIndex+1}>
-                            Weather at:
-                            <table align = "centre">
-                              <tbody>                             
-                                <tr>
-                                  <th>{formattedTime}:</th>
-                                  <th>{segment.weather.rain}mm precipitation</th>
-                                  <th>{segment.weather.temperature}°C</th>
-                                  <th>{segment.weather.cloudiness}% cloud cover</th>
-                                  <th>{segment.weather.wind_speed}km/h {segment.weather.wind_direction}</th>
-                                </tr>
-                              </tbody>
-                            </table>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </details>
-            ))}
-          </div>
-        )}
-
-
       
-      </div>
-      {weatherData && solarData &&
-      <>
-        <div>At {weatherData[0].time}</div>
-        <table style={{textAlign: "center", width: "100%"}}>
-          <tbody>
-              <tr>
-                <td>Temperature</td>
-                <td>Cloudiness</td>
-                <td>Wind</td>
-                <td>Precipitation</td>
-              </tr>
-              <tr>
-                <td>{weatherData[0].temperature}°C</td>
-                <td>{weatherData[0].cloudiness}%</td>
-                <td>{weatherData[0].wind_speed} km/h {weatherData[0].wind_direction}</td>
-                <td>{weatherData[0].rain} mm</td>
-              </tr>
-          </tbody>
-        </table>
-        <hr/>
-        <table style={{textAlign: "center", width: "100%"}}>
-          <tbody>
-              <tr>
-                <td>Sunrise</td>
-                <td>Sunset</td>
-              </tr>
-              <tr>
-                <td>{solarData[0].rise}</td>
-                <td>{solarData[0].set}</td>
-              </tr>
-          </tbody>
-        </table>
-      </>
-      }
+      <div style={{ display: "flex", justifyContent: "space-between", width: "100%", gap: "30px" }}>
+        {/* Weather Section - Displays weather forecast for selected coordinates */}
+        <div style={{ flex: 1, textAlign: "center" }}>
+          <h2>Weather Forecast</h2>
+          {/* Map Section */}
+          <div style={{height: "300px", width: "100%", marginBottom: "10px" }}>
+            <MapContainer center={[53.49, -7.562]} zoom={7} style={{ height: "100%", width: "100%" }}>
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              <LocationMarker />
+                  
+                {/* Map Trail Routes */}
+                            {topTrails && topTrails.features.map((trail, index) => {
+                                const polylineCoords = trail.geometry.coordinates.map(([lng, lat]) => [lat, lng]); // Convert to Leaflet format
 
-    </div>
+                                return (
+                                    <Polyline key={index} positions={polylineCoords} color="blue" weight={5}>
+                                    </Polyline>
+                                );
+                            })}
+            </MapContainer>
+            
+          </div>
 
-    {/* Table Section - Displays weather data in a table beside the map */}
-    <div style={{ flex: 1, textAlign: "center" }}>
-      {weatherData && weatherData.length === 24 && (
-        <div className="weather-table-container">
-          <table className="weather-table">
-            <thead>
-              <tr>
-                <th>Time </th>
-                <th>Temperature</th>
-                <th>Cloudiness</th>
-                <th>Wind Speed</th>
-                <th>Precipitation</th>
-                <th style={{ borderLeft: '3px solid black' }}>Time</th>
-                <th>Temperature</th>
-                <th>Cloudiness</th>
-                <th>Wind Speed</th>
-                <th>Precipitation</th>
-              </tr>
-            </thead>
-            <tbody>
-              {weatherData &&
-                weatherData.length > 1 &&
-                weatherData.map((data, index) => {
-                  if (index % 2 === 0) {
-                    const nextData = weatherData[index + 1]; // Get the next hour data (pair)
-                    return (
-                      <tr key={index}>
-                        <td>{data.time}</td>
-                        <td>{data.temperature}°C</td>
-                        <td>{data.cloudiness}%</td>
-                        <td>{data.wind_speed} km/h {data.wind_direction}</td>
-                        <td>{data.rain} mm</td>
-
-                        {nextData ? (
-                          <>
-                            <td style={{ borderLeft: '3px solid black' }}>{nextData.time}</td>
-                            <td>{nextData.temperature}°C</td>
-                            <td>{nextData.cloudiness}%</td>
-                            <td>{nextData.wind_speed} km/h {nextData.wind_direction}</td>
-                            <td>{nextData.rain} mm</td>
-                          </>
-                        ) : (
-                          // If there's no pair (odd number of entries), show empty cells
-                          <>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td>-</td>
-                          </>
-                        )}
+          <div>
+            <input type="text" placeholder="Latitude" value={latitude} readOnly />
+            <input type="text" placeholder="Longitude" value={longitude} readOnly />
+            <button onClick={() => { fetchSolar(); fetchWeather();}}>Get Weather at your location</button>
+            <button onClick={() => { fetchTopTrails(); fetchTrailWeather();}}>Get 5 closest Trails</button>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "30px" }}>
+              {/* Left Side - Weather and Solar Data */}
+                {weatherData && solarData && (
+                <div style={{ flex: 1 }}>
+                  <h2>Current Weather</h2>
+                  <table style={{ textAlign: "center", width: "100%", borderCollapse: "collapse" }}>
+                    <tbody>
+                      <tr>
+                        <td>Temperature</td>
+                        <td>Cloudiness</td>
+                        <td>Wind</td>
+                        <td>Precipitation</td>
                       </tr>
-                    );
-                  } else {
-                    return null; // Skip odd rows as they are already included in pairs
-                  }
-                })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  </div>
+                      <tr>
+                        <td>{weatherData[0].temperature}°C</td>
+                        <td>{weatherData[0].cloudiness}%</td>
+                        <td>{weatherData[0].wind_speed} km/h {weatherData[0].wind_direction}</td>
+                        <td>{weatherData[0].rain} mm</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <hr />
+                  <h2>Sun Times</h2>
+                  <table style={{ textAlign: "center", width: "100%", borderCollapse: "collapse" }}>
+                    <tbody>
+                      <tr>
+                        <td>Sunrise</td>
+                        <td>Sunset</td>
+                      </tr>
+                      <tr>
+                        <td>{solarData[0].rise}</td>
+                        <td>{solarData[0].set}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                )}
 
+                {/* Right Side - Trail Weather */}
+                {topTrails && trailWeather && (
+                  <div style={{ flex: 1 }}>
+                  <div>
+                      <h2>Trail Weather</h2>
+                      {topTrails.features.map((trail, index) => (
+                        <details key={index} style={{ marginBottom: "10px" }}>
+                          <summary>{trail.properties.name}</summary>
+                          <button onClick={() => updateDestination(`${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`)}>
+                            Set as destination
+                          </button>
+                          <div style={{ paddingLeft: "20px" }}>
+                            If starting the trail in an hour:
+                            <div style={{ listStyleType: "none", paddingLeft: "0" }}>
+                              {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
+                                const isoString = segment.weather.forecast_time;
+                                const date = new Date(isoString);
+                                const timeString = date.toLocaleTimeString("en-US", {
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                  hour12: true,
+                                });
+                                const formattedTime = timeString.replace(":00", "");
+                                
+                                return (
+                                  <div key={segmentIndex + 1}>
+                                    <table align="center" style={{ width: "100%", borderCollapse: "collapse" }}>
+                                      <tbody>
+                                        <tr>
+                                          <th>{formattedTime}:</th>
+                                          <th>{segment.weather.rain}mm precipitation</th>
+                                          <th>{segment.weather.temperature}°C</th>
+                                          <th>{segment.weather.cloudiness}% cloud cover</th>
+                                          <th>{segment.weather.wind_speed}km/h {segment.weather.wind_direction}</th>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+          </div>          
+        </div>
+
+        {/* Table Section - Displays weather data in a table beside the map */}
+        <div style={{ flex: 1, textAlign: "center" }}>
+          {weatherData && weatherData.length === 24 && (
+            <div className="weather-table-container">
+              <table className="weather-table">
+                <thead>
+                  <tr>
+                    <th>Time </th>
+                    <th>Temperature</th>
+                    <th>Cloudiness</th>
+                    <th>Wind Speed</th>
+                    <th>Precipitation</th>
+                    <th style={{ borderLeft: '3px solid black' }}>Time</th>
+                    <th>Temperature</th>
+                    <th>Cloudiness</th>
+                    <th>Wind Speed</th>
+                    <th>Precipitation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {weatherData &&
+                    weatherData.length > 1 &&
+                    weatherData.map((data, index) => {
+                      if (index % 2 === 0) {
+                        const nextData = weatherData[index + 1]; // Get the next hour data (pair)
+                        return (
+                          <tr key={index}>
+                            <td>{data.time}</td>
+                            <td>{data.temperature}°C</td>
+                            <td>{data.cloudiness}%</td>
+                            <td>{data.wind_speed} km/h {data.wind_direction}</td>
+                            <td>{data.rain} mm</td>
+
+                            {nextData ? (
+                              <>
+                                <td style={{ borderLeft: '3px solid black' }}>{nextData.time}</td>
+                                <td>{nextData.temperature}°C</td>
+                                <td>{nextData.cloudiness}%</td>
+                                <td>{nextData.wind_speed} km/h {nextData.wind_direction}</td>
+                                <td>{nextData.rain} mm</td>
+                              </>
+                            ) : (
+                              // If there's no pair (odd number of entries), show empty cells
+                              <>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                              </>
+                            )}
+                          </tr>
+                        );
+                      } else {
+                        return null; // Skip odd rows as they are already included in pairs
+                      }
+                    })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Error Message Display */}
       {error && (
         <div style={{ marginTop: "20px", color: "red", fontWeight: "bold" }}>
           <p>{error}</p>
         </div>
-      )}
+        )}
     </div>
   );
-    }
+}
 
 export default Weather;
