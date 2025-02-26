@@ -5,6 +5,7 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.measure import D
 from django.views.decorators.csrf import csrf_exempt
 from ..models import Trail
 
@@ -17,15 +18,17 @@ def parse_parameters(request):
     lon = request.GET.get("lon")
     dt_str = request.GET.get("datetime")
     activity_type = request.GET.get("activity_type")
+    max_distance = request.GET.get("max_distance", 50)
     if not lat or not lon or not dt_str:
         raise ValueError("lat, lon, and datetime are required.")
     try:
         lat = float(lat)
         lon = float(lon)
         base_dt = datetime.fromisoformat(dt_str)
+        max_distance = float(max_distance)
     except Exception as e:
         raise ValueError(f"Invalid parameter: {e}")
-    return lat, lon, base_dt, activity_type
+    return lat, lon, base_dt, activity_type, max_distance
 
 def fetch_weather_at(lat, lon, target_dt):
     """
@@ -74,25 +77,23 @@ def fetch_weather_at(lat, lon, target_dt):
             return None
     return None
 
-def get_top_trails(activity_type, user_point, limit=5):
+def get_top_trails(activity_type, user_point, limit=5, max_distance_km=50):
     """
-    Retrieve the top `limit` trails nearest to the provided user_point.
+    Retrieve the top `limit` trails nearest to the provided user_point,
+    filtering out trails beyond max_distance_km.
     """
-    print(activity_type)
-
-    trails = Trail.objects.all()
+    max_distance_filter = D(km=max_distance_km)
+    trails = Trail.objects.filter(route__distance_lte=(user_point, max_distance_filter))
 
     if activity_type == "Cycling":
         trails = trails.filter(activity="Cycling")
-
-    if activity_type == "Walking":
+    elif activity_type == "Walking":
         trails = trails.filter(activity="Walking")
 
-
     trails = trails.annotate(distance=Distance("route", user_point))\
-                .order_by("distance")[:limit]
-
+                   .order_by("distance")[:limit]
     return trails
+
 
 def get_segments_for_trail(trail, base_dt):
     """
@@ -158,12 +159,12 @@ def get_top_trails_weather_segments(request):
     if request.method != "GET":
         return JsonResponse({"error": "GET method required"}, status=400)
     try:
-        lat, lon, base_dt, activity_type = parse_parameters(request)
+        lat, lon, base_dt, activity_type, max_distance_km = parse_parameters(request)
     except ValueError as e:
         return JsonResponse({"error": str(e)}, status=400)
     
     user_point = Point(lon, lat, srid=4326)
-    trails = get_top_trails(activity_type, user_point, limit=5)
+    trails = get_top_trails(activity_type, user_point, limit=5, max_distance_km=max_distance_km)
     
     features = []
     for trail in trails:
