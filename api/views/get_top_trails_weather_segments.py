@@ -80,19 +80,18 @@ def get_top_trails(activity_type, user_point, limit=5):
     """
     print(activity_type)
 
-    '''if activity_type == "Cycling":
-        trails = Trail.filter(activity="Cycling") \
-                      .annotate(distance=Distance("route", user_point))\
-                      .order_by("distance")[:limit]
-    
-    elif activity_type == "Walking":
-        trails = Trail.filter(activity="Walking") \
-                      .annotate(distance=Distance("route", user_point))\
-                      .order_by("distance")[:limit]
+    trails = Trail.objects.all()
 
-    else:'''
-    trails = Trail.objects.annotate(distance=Distance("route", user_point))\
-                              .order_by("distance")[:limit]
+    if activity_type == "Cycling":
+        trails = trails.filter(activity="Cycling")
+
+    if activity_type == "Walking":
+        trails = trails.filter(activity="Walking")
+
+
+    trails = trails.annotate(distance=Distance("route", user_point))\
+                .order_by("distance")[:limit]
+
     return trails
 
 def get_segments_for_trail(trail, base_dt):
