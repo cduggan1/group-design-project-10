@@ -35,3 +35,10 @@ nav ul li a:hover {
 .App {
   text-align: center;
 }
+
+.arrow {
+  font-size: 2em; /* h2 font size */
+  color: white;
+  display: flex;
+  align-items: center;
+}

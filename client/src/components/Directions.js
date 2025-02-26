@@ -58,9 +58,9 @@ const Directions = ({ latitude, longitude, trailAdr}) => {
         <button onClick={fetchDirections}>Get Directions</button>
 
         {/* Predefined destinations */}
-        <button onClick={() => setDestination("53.377,-6.073")}>Get Directions to Howth</button>
+        {/*<button onClick={() => setDestination("53.377,-6.073")}>Get Directions to Howth</button>
         <button onClick={() => setDestination("53.144, -6.155")}>Get Directions to the Sugar Loaf</button>
-        <button onClick={() => setDestination("53.141, -6.56")}>Get Directions to the Blessington Greenway</button>
+        <button onClick={() => setDestination("53.141, -6.56")}>Get Directions to the Blessington Greenway</button>*/}
 
         {/* Display directions if available */}
         {directions && directions.length > 0 && (
