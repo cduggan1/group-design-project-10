@@ -40,6 +40,7 @@ const Weather = ({
   const [topCycleTrails, setTopCycleTrails] = useState(null);
   const [topWalkingTrails, setTopWalkingTrails] = useState(null);
   const [maxDistance, setMaxDistance] = useState(50);
+  const [isLoading, setIsLoading] = useState(false);
 
   const now = new Date();
   const localTime = new Date(now.getTime() + 3600000)
@@ -146,6 +147,18 @@ const Weather = ({
       setError("Failed to fetch trail data");
       setTopTrails(null);
     }
+  };
+
+  const handleFetchCyclingTrails = async () => {
+    setIsLoading(true);
+    await Promise.all([fetchTopCycleTrails(), fetchTrailWeather("Cycling")]);
+    setIsLoading(false);
+  };
+
+  const handleFetchWalkingTrails = async () => {
+    setIsLoading(true);
+    await Promise.all([fetchTopWalkingTrails(), fetchTrailWeather("Walking")]);
+    setIsLoading(false);
   };
 
   const fetchSolar = async () => {
@@ -286,19 +299,21 @@ const Weather = ({
             </button>
             <button
               onClick={() => {
-                fetchTopCycleTrails();
+                handleFetchCyclingTrails();
                 fetchTrailWeather("Cycling");
               }}
+              disabled={isLoading}
             >
-              Get cycling Trails
+              {isLoading ? "Loading..." : "Get cycling Trails"}
             </button>
             <button
               onClick={() => {
-                fetchTopWalkingTrails();
+                handleFetchWalkingTrails();
                 fetchTrailWeather("Walking");
               }}
+              disabled={isLoading}
             >
-              Get walking Trails
+              {isLoading ? "Loading..." : "Get walking Trails"}
             </button>
             <div
               style={{
