@@ -18,11 +18,14 @@ function App() {
     };
 
     // State for destination as a string (e.g., "latitude, longitude")
-    const [destination, setDestination] = useState("");
+    const [destination, setDestination] = useState({
+      latitude: null,
+      longitude: null,
+    });
 
     // Update destination as a string for Directions component
     const updateDestination = (lat, lon) => {
-        setDestination(`${lat}, ${lon}`);
+        setDestination({latitude: lat, longitude: lon});
     };
 
     return (
@@ -48,7 +51,7 @@ function App() {
                     />
                     <Route
                         path="/directions"
-                        element={<Directions latitude={location.latitude} longitude={location.longitude} trailDestination={destination} />} 
+                        element={<Directions latitude={location.latitude} longitude={location.longitude} trailAdr={destination.latitude} trailLon={destination.longitude}/>} 
                     />
                 </Routes>
             </div>

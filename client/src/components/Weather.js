@@ -167,7 +167,6 @@ const Weather = ({ latitude: initialLat, longitude: initialLon, updateDestinatio
                 <button onClick={() => updateDestination(`${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`)}>
                   Set as destination
                 </button>
-                {trail.geometry.coordinates[0]}
                 <div style={{ paddingLeft: "20px" }}>
                   If starting the trail now:
                   <div style={{ listStyleType: "none", paddingLeft: "0" }}>

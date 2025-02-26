@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 
-const Directions = ({ latitude, longitude, trailDestination}) => {
+const Directions = ({ latitude, longitude, trailAdr}) => {
   // State variables for storing input values and fetched data
   const BASE_URL = process.env.REACT_APP_API_URL;
 
   const [start, setStart] = useState(`${latitude}, ${longitude}`); // Start with the current latitude and longitude as default
-  const [destination, setDestination] = useState(trailDestination || "");
+  const [destination, setDestination] = useState(`${trailAdr}`);
   const [directions, setDirections] = useState(null); // Stores fetched directions
   const [error, setError] = useState(""); // Stores error messages
 
@@ -26,11 +26,7 @@ const Directions = ({ latitude, longitude, trailDestination}) => {
     }
   };
 
-  useEffect(() => {
-    if (trailDestination) {
-      setDestination(trailDestination);
-    }
-  }, [trailDestination]);
+  useEffect(() => {setDestination(`${trailAdr}`)});
   
 
   // Effect to update start location if latitude and longitude props change
@@ -42,7 +38,6 @@ const Directions = ({ latitude, longitude, trailDestination}) => {
     <div style={{ display: "flex", justifyContent: "center", gap: "30px", padding: "20px" }}>
       <div style={{ flex: 1, textAlign: "center" }}>
         <h2>Directions</h2>
-
         {/* "From" Location input */}
         <input
           type="text"
