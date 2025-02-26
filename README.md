@@ -58,3 +58,9 @@ You can also run Django python commands directly in each container without needi
 And within that for example you can do directly:
 
 `python manage.py migrate`
+
+# Backends
+
+You can check the status of our production server, database, and Docker containers at the following endpoint:
+
+### http://139.162.215.133:5920/stats
