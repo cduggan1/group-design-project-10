@@ -21,7 +21,7 @@ class Command(BaseCommand):
             title='Status Yellow - Rain and Wind warning',
             description='Heavy rainfall expected with accumulations of 20 to 30mm. Strong winds with mean speeds of 50 to 65 km/h and gusts up to 100 km/h.',
             severity='LOW',
-            location=Point(-6.293676, 53.340305), 
+            location=Point(-7.397039, 52.843995), 
             radius_km=20,  
             start_time=now,
             end_time=tomorrow_evening,
