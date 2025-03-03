@@ -12,6 +12,10 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from ..models import Trail
 
+# Gets coordinates for a given address and returns:
+#   Latitude
+#   Longitude
+#   Address
 def get_address(request):
     if request.method == "GET":
         address = request.GET.get("address")
@@ -36,7 +40,10 @@ def get_address(request):
 
         values.append({"longitude": longitude, "latitude": latitude, "address": address})
         return JsonResponse(values, safe=False)
-    
+
+# Gets directions from the Heidelberg Institute for Geoinformation Technology for a route between the given start and destination
+# and returns textual directions as a list
+# N.B. feature.get("geometries", {}).get("coordinates", []) should return coordinate points, which could be used to generate a Leaflet map
 def get_directions(request):
     if request.method == "GET":
         start = request.GET.get("from")
@@ -126,7 +133,8 @@ def get_top_trails_near_location(request):
         feature["properties"]["distance_m"] = trail.distance.m
 
     return HttpResponse(json.dumps(geojson_data), content_type="application/json")
-    
+
+# Functions the same as get_top_trails_near_location, but filters to only return the top five cycling trails
 @csrf_exempt
 def get_top_cycle_trails_near_location(request):
     """
@@ -169,7 +177,7 @@ def get_top_cycle_trails_near_location(request):
 
     return HttpResponse(json.dumps(geojson_data), content_type="application/json")
 
-
+# Functions the same as get_top_trails_near_location, but filters to only return the top five walking trails
 @csrf_exempt
 def get_top_walking_trails_near_location(request):
     """
