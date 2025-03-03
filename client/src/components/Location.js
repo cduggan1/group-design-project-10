@@ -1,17 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 
+// Location component that allows users to search for an address and fetch coordinates
 const Location = ({ updateLocation, initialLocation }) => {
-  const BASE_URL = process.env.REACT_APP_API_URL;
+  const BASE_URL = process.env.REACT_APP_API_URL; // Base API URL from environment variables
+
+  // State variables to manage the component's data
   const [query_address, setQueryAddress] = useState("");
-  const [location, setLocation] = useState(initialLocation || null); 
-  const [error, setError] = useState(""); 
+  const [location, setLocation] = useState(initialLocation || null); // Stores selected location data
+  const [error, setError] = useState(""); // Stores error messages
   const [suggestions, setSuggestions] = useState([]); 
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(false); 
+
   const suggestionsCache = useRef({});
   const debounceTimerRef = useRef(null);
-  
+
+  // Effect to set initial location if provided
   useEffect(() => {
     if (initialLocation) {
       setLocation(initialLocation);
@@ -26,6 +30,7 @@ const Location = ({ updateLocation, initialLocation }) => {
     };
   }, []);
 
+  // Function to fetch coordinates based on the query_address
   const fetchCoordinates = async () => {
     try {
       const response = await fetch(`${BASE_URL}/api/address/?address=${query_address}`);
@@ -33,9 +38,10 @@ const Location = ({ updateLocation, initialLocation }) => {
         throw new Error("Failed to fetch address");
       }
       const data = await response.json();
-      setLocation(data[0]);
+      setLocation(data[0]); // Update location state
       setError("");
 
+      // Update parent component with the new location data
       updateLocation(data[0].latitude, data[0].longitude, data[0].address);
     } catch (err) {
       setError("Failed to fetch coordinates");
@@ -43,23 +49,24 @@ const Location = ({ updateLocation, initialLocation }) => {
     }
   };
 
+
   const handleInputChange = (e) => {
     const value = e.target.value;
     setQueryAddress(value);
-    
+
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    
+
     if (value.length >= 2) {
       if (suggestionsCache.current[value]) {
         setSuggestions(suggestionsCache.current[value]);
         setShowSuggestions(true);
         return;
       }
-      
+
       setIsLoading(true);
-      
+
       debounceTimerRef.current = setTimeout(() => {
         fetchSuggestions(value);
       }, 150);
@@ -76,18 +83,18 @@ const Location = ({ updateLocation, initialLocation }) => {
       setIsLoading(false);
       return;
     }
-    
+
     try {
       const response = await fetch(`${BASE_URL}/api/location-suggestions/?query=${query}`);
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch suggestions");
       }
-      
+
       const data = await response.json();
-      
+
       suggestionsCache.current[query] = data;
-      
+
       setSuggestions(data);
       setShowSuggestions(true);
     } catch (err) {
@@ -112,10 +119,11 @@ const Location = ({ updateLocation, initialLocation }) => {
 
   return (
     <div style={{ display: "flex", justifyContent: "center", gap: "30px", padding: "20px" }}>
-      {}
+      {/* Main container for input and suggestions */}
       <div style={{ flex: 1, textAlign: "center" }}>
         <h2>Set Location</h2>
         <div style={{ position: "relative" }}>
+          {/* Address input field */}
           <input
             type="text"
             placeholder="Address"
@@ -129,7 +137,7 @@ const Location = ({ updateLocation, initialLocation }) => {
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             style={{ width: "100%", padding: "8px", marginBottom: "5px" }}
           />
-          
+
           {}
           {isLoading && (
             <div style={{ 
@@ -142,7 +150,7 @@ const Location = ({ updateLocation, initialLocation }) => {
               Loading...
             </div>
           )}
-          
+
           {}
           {showSuggestions && suggestions.length > 0 && (
             <div style={{
@@ -175,9 +183,10 @@ const Location = ({ updateLocation, initialLocation }) => {
           )}
         </div>
         
+        {/* Button to manually fetch coordinates */}
         <button onClick={fetchCoordinates}>Get Coordinates</button>
 
-        {}
+        {/* Display selected location or message if none is set */}
         {location ? (
           <p>Current location: {location.address}<br />{location.latitude} {location.longitude}</p>
         ) : (
@@ -185,7 +194,7 @@ const Location = ({ updateLocation, initialLocation }) => {
         )}
       </div>
 
-      {}
+      {/* Error message display */}
       {error && (
         <div style={{ position: "absolute", bottom: "20px", left: "20px", color: "red" }}>
           <p>{error}</p>

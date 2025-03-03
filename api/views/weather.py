@@ -12,6 +12,13 @@ from django.contrib.gis.geos import Point
 from ..models import WeatherAlert
 
 
+# Gets the weather from the Met Éireann API for given coordinates, and returns five values:
+#   Temperature (in degrees Celsius)
+#   Cloudiness (as a percentage)
+#   Wind speed in kilometres per hour
+#   Wind direction as an abbreviation e.g. SW
+#   Timestamp
+#   Rain forecast in millimetres
 @csrf_exempt
 def get_weather(request):
     if request.method == "GET":
@@ -68,6 +75,10 @@ def get_weather(request):
 
             return JsonResponse(values, safe=False)
 
+
+# Gets the sunrise and sunset values for today at given coordinates, and returns two values:
+#   Sunrise time
+#   Sunset time
 def get_solar(request):
     if request.method == "GET":
         lat = request.GET.get("lat")
