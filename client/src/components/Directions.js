@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 
-const Directions = ({ latitude, longitude, trailAdr}) => {
-  // State variables for storing input values and fetched data
+const Directions = ({ latitude, longitude, trailAdr }) => {
+  // Base API URL from environment variables
   const BASE_URL = process.env.REACT_APP_API_URL;
 
-  const [start, setStart] = useState(`${latitude}, ${longitude}`); // Start with the current latitude and longitude as default
-  const [destination, setDestination] = useState(`${trailAdr}`);
-  const [directions, setDirections] = useState(null); // Stores fetched directions
+  // State variables to manage the input values and fetched directions
+  const [start, setStart] = useState(`${latitude}, ${longitude}`); // Initial start location based on current coordinates
+  const [destination, setDestination] = useState(`${trailAdr}`); // Initial destination (trail address)
+  const [directions, setDirections] = useState(null); // Stores fetched directions data
   const [error, setError] = useState(""); // Stores error messages
 
-
-  // Fetch directions from API
+  // Function to fetch directions from the API
   const fetchDirections = async () => {
     try {
       const response = await fetch(`${BASE_URL}/api/directions/?from=${start}&to=${destination}`);
@@ -19,54 +19,56 @@ const Directions = ({ latitude, longitude, trailAdr}) => {
       }
       const data = await response.json();
       setDirections(data); // Store fetched directions
-      setError(""); // Clear any error message
+      setError(""); // Clear any previous error messages
     } catch (err) {
-      setError("Failed to fetch directions");
-      setDirections(null);
+      setError("Failed to fetch directions"); // Display error if the request fails
+      setDirections(null); // Clear directions data on failure
     }
   };
 
   useEffect(() => {setDestination(`${trailAdr}`)});
-  
 
-  // Effect to update start location if latitude and longitude props change
+  // Effect to update the start location if the latitude or longitude props change
   useEffect(() => {
-    setStart(`${latitude}, ${longitude}`); // Update start location with current latitude and longitude
+    setStart(`${latitude}, ${longitude}`);
   }, [latitude, longitude]);
 
   return (
     <div style={{ display: "flex", justifyContent: "center", gap: "30px", padding: "20px" }}>
       <div style={{ flex: 1, textAlign: "center" }}>
         <h2>Directions</h2>
-        {/* "From" Location input */}
+
+        {/* Input field for "From" location */}
         <input
           type="text"
           placeholder="From (latitude, longitude)"
           value={start}
-          onChange={(e) => setStart(e.target.value)} // Handle changes in start location
+          onChange={(e) => setStart(e.target.value)} // Update start location based on user input
         />
 
-        {/* "To" Location input */}
+        {/* Input field for "To" location */}
         <input
           type="text"
           placeholder="To (latitude, longitude)"
           value={destination}
-          onChange={(e) => setDestination(e.target.value)} // Handle changes in destination
+          onChange={(e) => setDestination(e.target.value)} // Update destination based on user input
         />
 
-        {/* Fetch directions when clicked */}
+        {/* Button to fetch directions */}
         <button onClick={fetchDirections}>Get Directions</button>
 
-        {/* Predefined destinations */}
-        {/*<button onClick={() => setDestination("53.377,-6.073")}>Get Directions to Howth</button>
+        {/* Predefined destinations (commented out but can be used for quick access) */}
+        {/* 
+        <button onClick={() => setDestination("53.377,-6.073")}>Get Directions to Howth</button>
         <button onClick={() => setDestination("53.144, -6.155")}>Get Directions to the Sugar Loaf</button>
-        <button onClick={() => setDestination("53.141, -6.56")}>Get Directions to the Blessington Greenway</button>*/}
+        <button onClick={() => setDestination("53.141, -6.56")}>Get Directions to the Blessington Greenway</button>
+        */}
 
         {/* Display directions if available */}
         {directions && directions.length > 0 && (
           <div>
             {directions.map((direction, index) => (
-              <p key={index}>{direction}</p>
+              <p key={index}>{direction}</p> // Display each step of the directions
             ))}
           </div>
         )}
