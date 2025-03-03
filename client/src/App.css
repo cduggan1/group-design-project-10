@@ -1,44 +1,51 @@
+/* Styles for the navigation bar */
 nav {
-  background-color: #333;
-  padding: 10px 0;
-  position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 1000;
+  background-color: #333; /* Dark background color for contrast */
+  padding: 10px 0; /* Adds vertical padding to improve spacing */
+  position: sticky; /* Keeps navbar fixed at the top while scrolling */
+  top: 0; /* Ensures it sticks to the top of the viewport */
+  width: 100%; /* Makes the navbar span the full width of the page */
+  z-index: 1000; /* Ensures it stays above other elements */
 }
 
+/* Styling for the navigation list */
 nav ul {
-  display: flex;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
+  display: flex; /* Aligns list items in a row */
+  justify-content: center; /* Centers the navigation links */
+  margin: 0; /* Removes default margin */
+  padding: 0; /* Removes default padding */
 }
 
+/* Styling for individual list items */
 nav ul li {
-  list-style-type: none;
-  margin: 0 20px;
+  list-style-type: none; /* Removes bullet points from list */
+  margin: 0 20px; /* Adds horizontal spacing between links */
 }
 
+/* Styling for navigation links */
 nav ul li a {
-  color: #fff;
-  text-decoration: none;
-  font-size: 18px;
-  font-weight: bold;
-  padding: 10px;
-  border-radius: 4px;
+  color: #fff; /* Sets text color to white */
+  text-decoration: none; /* Removes default underline */
+  font-size: 18px; /* Increases font size for readability */
+  font-weight: bold; /* Makes text bold */
+  padding: 10px; /* Adds padding for better clickability */
+  border-radius: 4px; /* Rounds corners slightly */
 }
 
+/* Hover effect for navigation links */
 nav ul li a:hover {
-  background-color: #575757;
+  background-color: #575757; /* Changes background color on hover */
 }
 
+/* Centering text within the main application container */
 .App {
-  text-align: center;
+  text-align: center; /* Centers content inside the App */
 }
 
+/* Styling for arrow symbols */
 .arrow {
-  font-size: 2em; /* h2 font size */
-  color: white;
-  display: flex;
-  align-items: center;
+  font-size: 2em; /* Makes arrows large (equivalent to h2 size) */
+  color: white; /* Sets arrow color to white */
+  display: flex; /* Ensures proper alignment */
+  align-items: center; /* Vertically aligns arrows with text */
 }
