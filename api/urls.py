@@ -1,6 +1,7 @@
 from django.urls import path
 from .views.views import (
     get_address, 
+    get_reverse_address,
     get_directions, 
     get_all_trails, 
     get_top_trails_near_location,
@@ -20,6 +21,7 @@ from .views.get_top_trails_weather_segments import get_top_trails_weather_segmen
 urlpatterns = [
     path('weather/', get_weather),
     path('address/', get_address),
+    path('reverse-address/', get_reverse_address),
     path('directions/', get_directions),
     path('solar/', get_solar),
     path('weather-alerts/', get_weather_alerts),
