@@ -1,6 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 
-const Location = ({ updateLocation, initialLocation }) => {
+const Location = ({
+  updateLocation,
+  initialLocation,
+  fetchDefaultLocation,
+  saveDefaultLocation,
+}) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [query_address, setQueryAddress] = useState("");
   const [location, setLocation] = useState(initialLocation || null);
@@ -37,8 +42,6 @@ const Location = ({ updateLocation, initialLocation }) => {
         const { latitude, longitude } = position.coords;
         setLocation({ latitude, longitude, address: "Fetching address..." });
         updateLocation(latitude, longitude, "Fetching address...");
-
-        // Placeholder function for geocoding API
         const address = await getGeocodedAddress(latitude, longitude);
         setLocation({ latitude, longitude, address });
         updateLocation(latitude, longitude, address);
@@ -235,6 +238,8 @@ const Location = ({ updateLocation, initialLocation }) => {
 
         <button onClick={fetchCoordinates}>Get Coordinates</button>
         <button onClick={fetchGpsLocation}>Use GPS Location</button>
+        <button onClick={saveDefaultLocation}>Save as Default</button>
+        <button onClick={fetchDefaultLocation}>Fetch Default Location</button>
 
         {}
         {location ? (

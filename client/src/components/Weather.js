@@ -6,7 +6,7 @@ import {
   Polyline,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import L from "leaflet"; // Import the Leaflet library
 import WeatherAlerts from "./WeatherAlerts";
 import "./Weather.css";
@@ -41,6 +41,13 @@ const Weather = ({
   const [topWalkingTrails, setTopWalkingTrails] = useState(null);
   const [maxDistance, setMaxDistance] = useState(50);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialLat && initialLon) {
+      setLatitude(initialLat);
+      setLongitude(initialLon);
+    }
+  }, [initialLat, initialLon]);
 
   const now = new Date();
   const localTime = new Date(now.getTime() + 3600000)
