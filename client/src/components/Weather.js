@@ -204,6 +204,16 @@ const Weather = ({
     ) : null;
   }
 
+  // Multiple Markers for Selected Locations 
+  {selectedLocations.map((loc, index) => (
+    <Marker key={index} position={[loc.latitude, loc.longitude]} icon={defaultIcon}>
+      <Popup>
+        Location {index + 1}: {loc.latitude}, {loc.longitude}
+        <button onClick={() => removeLocation(index)}>Remove</button>
+      </Popup>
+    </Marker>
+  ))}
+
   return (
     <div
       style={{
