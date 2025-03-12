@@ -422,6 +422,42 @@ const Weather = ({
                 </div>
               )}
 
+              {/* Multi-Location Weather Comparison */}
+              {weatherData && selectedLocations.length > 0 && (
+                <div style={{ flex: 1 }}>
+                  <h2>Weather Comparison</h2>
+                  <table
+                    style={{
+                      textAlign: "center",
+                      width: "100%",
+                      borderCollapse: "collapse",
+                      marginTop: "20px",
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <th>Location</th>
+                        <th>Temperature</th>
+                        <th>Cloudiness</th>
+                        <th>Wind Speed</th>
+                        <th>Precipitation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedLocations.map((loc, index) => (
+                        <tr key={index}>
+                          <td>{loc.latitude}, {loc.longitude}</td>
+                          <td>{weatherData[index]?.temperature}°C</td>
+                          <td>{weatherData[index]?.cloudiness}%</td>
+                          <td>{weatherData[index]?.wind_speed} km/h</td>
+                          <td>{weatherData[index]?.rain} mm</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
               {/* Right Side - Trail Weather */}
               {topCycleTrails && trailWeather && (
                 <div style={{ flex: 1 }}>
