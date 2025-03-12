@@ -77,6 +77,28 @@ const Weather = ({
       setWeatherData(null);
     }
   };
+  
+  // Fetch Weather fpr Multiple locations
+  const fetchAllWeather = async () => {
+    try {
+      const weatherPromises = selectedLocations.map(async (loc) => {
+        const response = await fetch(
+          `${BASE_URL}/api/weather/?lat=${loc.latitude}&lon=${loc.longitude}`
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch weather data for ${loc.latitude}, ${loc.longitude}`);
+        }
+        return response.json();
+      });
+  
+      const weatherResults = await Promise.all(weatherPromises);
+      setWeatherData(weatherResults);
+      setError("");
+    } catch (err) {
+      setError("Failed to fetch weather data for multiple locations");
+      setWeatherData(null);
+    }
+  };
 
   const fetchTrailWeather = async (activity) => {
     try {
@@ -314,7 +336,11 @@ const Weather = ({
             <button
               onClick={() => {
                 fetchSolar();
-                fetchWeather();
+                if (selectedLocations.length > 0) {
+                  fetchAllWeather(); // Fetch for multiple locations
+                } else {
+                  fetchWeather(); // Fetch for single location
+                }
               }}
             >
               Get Weather at your location
