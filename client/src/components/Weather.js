@@ -227,14 +227,21 @@ const Weather = ({
   }
 
   // Multiple Markers for Selected Locations 
-  {selectedLocations.map((loc, index) => (
-    <Marker key={index} position={[loc.latitude, loc.longitude]} icon={defaultIcon}>
-      <Popup>
-        Location {index + 1}: {loc.latitude}, {loc.longitude}
-        <button onClick={() => removeLocation(index)}>Remove</button>
-      </Popup>
-    </Marker>
-  ))}
+  function LocationMarkers() {
+    return (
+      <>
+        {selectedLocations.map((loc, index) => (
+          <Marker key={index} position={[loc.latitude, loc.longitude]} icon={defaultIcon}>
+            <Popup>
+              {loc.address} ({loc.latitude}, {loc.longitude})
+              <button onClick={() => removeLocation(index)} style={{ marginLeft: "10px" }}>Remove</button>
+            </Popup>
+          </Marker>
+        ))}
+      </>
+    );
+  }
+  
 
   return (
     <div
@@ -272,6 +279,7 @@ const Weather = ({
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
+              <LocationMarkers />
               <LocationMarker />
 
               {/* Map Trail Routes */}

@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef } from "react";
 const Location = ({ updateLocation, initialLocation }) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [query_address, setQueryAddress] = useState("");
-  const [location, setLocation] = useState(initialLocation || null); 
+  const [selectedLocations, setSelectedLocations] = useState([]);
+  const [location, setLocation] = useState(initialLocation || null);
   const [error, setError] = useState(""); 
   const [suggestions, setSuggestions] = useState([]); 
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -42,7 +43,10 @@ const Location = ({ updateLocation, initialLocation }) => {
       setLocation(null);
     }
   };
-
+  const removeLocation = (index) => {
+    setSelectedLocations((prev) => prev.filter((_, i) => i !== index));
+  };
+  
   const handleInputChange = (e) => {
     const value = e.target.value;
     setQueryAddress(value);
@@ -100,15 +104,24 @@ const Location = ({ updateLocation, initialLocation }) => {
 
   const handleSelectSuggestion = (suggestion) => {
     setQueryAddress(suggestion.label);
-    setLocation({
-      latitude: suggestion.latitude,
-      longitude: suggestion.longitude,
-      address: suggestion.label
+  
+    // Add the new location to the list without duplicating
+    setSelectedLocations((prev) => {
+      if (!prev.some((loc) => loc.latitude === suggestion.latitude && loc.longitude === suggestion.longitude)) {
+        return [...prev, {
+          latitude: suggestion.latitude,
+          longitude: suggestion.longitude,
+          address: suggestion.label
+        }];
+      }
+      return prev;
     });
-    updateLocation(suggestion.latitude, suggestion.longitude, suggestion.label, true); // Support multiple locations
+  
+    updateLocation(suggestion.latitude, suggestion.longitude, suggestion.label, true);
     setSuggestions([]);
     setShowSuggestions(false);
   };
+  
 
   return (
     <div style={{ display: "flex", justifyContent: "center", gap: "30px", padding: "20px" }}>
@@ -184,7 +197,20 @@ const Location = ({ updateLocation, initialLocation }) => {
           <p>No location set</p>
         )}
       </div>
-
+        {/* Show selected locations */}
+        {selectedLocations.length > 0 && (
+          <div>
+            <h3>Selected Locations:</h3>
+            <ul>
+              {selectedLocations.map((loc, index) => (
+                <li key={index}>
+                  {loc.address} ({loc.latitude}, {loc.longitude})  
+                  <button onClick={() => removeLocation(index)} style={{ marginLeft: "10px" }}>Remove</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       {}
       {error && (
         <div style={{ position: "absolute", bottom: "20px", left: "20px", color: "red" }}>
