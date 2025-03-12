@@ -41,6 +41,18 @@ const Weather = ({
   const [topWalkingTrails, setTopWalkingTrails] = useState(null);
   const [maxDistance, setMaxDistance] = useState(50);
   const [isLoading, setIsLoading] = useState(false);
+  
+  //Multi-location Support 
+  const [selectedLocations, setSelectedLocations] = useState([]);
+  const addLocation = () => {
+    setSelectedLocations((prev) => [
+      ...prev,
+      { latitude, longitude }
+    ]);
+  };
+  const removeLocation = (index) => {
+    setSelectedLocations((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const now = new Date();
   const localTime = new Date(now.getTime() + 3600000)
