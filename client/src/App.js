@@ -6,15 +6,12 @@ import Location from './components/Location';
 import Directions from './components/Directions';
 
 function App() {
-    // State for user location
-    const [location, setLocation] = useState({
-      latitude: null,
-      longitude: null,
-      adr: null,
-    });
+    // Store multiple selected locations
+    const [selectedLocations, setSelectedLocations] = useState([]);
     
-    const updateLocation = (lat, lon, adr) => {
-      setLocation({ latitude: lat, longitude: lon, address: adr });
+    // Update multiple locations
+    const updateLocation = (newLocations) => {
+        setSelectedLocations(newLocations); // Store the entire array of selected locations
     };
 
     // State for destination as a string (e.g., "latitude, longitude")
@@ -61,11 +58,11 @@ function App() {
                     />
                     <Route 
                         path="/weather" 
-                        element={<Weather latitude={location.latitude} longitude={location.longitude} updateDestination={updateDestination}/>} 
+                        element={<Weather selectedLocations={selectedLocations} updateDestination={updateDestination} />} 
                     />
                     <Route
                         path="/directions"
-                        element={<Directions latitude={location.latitude} longitude={location.longitude} trailAdr={destination.latitude} trailLon={destination.longitude}/>} 
+                        element={<Directions latitude={destination.latitude} longitude={destination.longitude} />} 
                     />
                 </Routes>
             </div>
