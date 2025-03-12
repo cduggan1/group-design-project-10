@@ -105,22 +105,24 @@ const Location = ({ updateLocation, initialLocation }) => {
   const handleSelectSuggestion = (suggestion) => {
     setQueryAddress(suggestion.label);
   
-    // Add the new location to the list without duplicating
     setSelectedLocations((prev) => {
       if (!prev.some((loc) => loc.latitude === suggestion.latitude && loc.longitude === suggestion.longitude)) {
-        return [...prev, {
+        const updatedLocations = [...prev, {
           latitude: suggestion.latitude,
           longitude: suggestion.longitude,
           address: suggestion.label
         }];
+  
+        updateLocation(updatedLocations); //update entire list of locations
+        return updatedLocations;
       }
       return prev;
     });
   
-    updateLocation(suggestion.latitude, suggestion.longitude, suggestion.label, true);
     setSuggestions([]);
     setShowSuggestions(false);
   };
+  
   
 
   return (
