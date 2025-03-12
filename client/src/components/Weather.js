@@ -4,9 +4,10 @@ import {
   Marker,
   useMapEvents,
   Polyline,
+  Popup
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import L from "leaflet"; // Import the Leaflet library
 import WeatherAlerts from "./WeatherAlerts";
 import "./Weather.css";
@@ -23,11 +24,7 @@ const defaultIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-const Weather = ({
-  latitude: initialLat,
-  longitude: initialLon,
-  updateDestination,
-}) => {
+const Weather = ({ latitude: initialLat, longitude: initialLon, selectedLocations = [], setSelectedLocations, updateDestination }) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [latitude, setLatitude] = useState(initialLat);
   const [longitude, setLongitude] = useState(initialLon);
@@ -41,18 +38,18 @@ const Weather = ({
   const [topWalkingTrails, setTopWalkingTrails] = useState(null);
   const [maxDistance, setMaxDistance] = useState(50);
   const [isLoading, setIsLoading] = useState(false);
-  
-  //Multi-location Support 
-  const [selectedLocations, setSelectedLocations] = useState([]);
-  const addLocation = () => {
-    setSelectedLocations((prev) => [
-      ...prev,
-      { latitude, longitude }
-    ]);
-  };
+
+  useEffect(() => {
+    if (initialLat && initialLon) {
+      setLatitude(initialLat);
+      setLongitude(initialLon);
+    }
+  }, [initialLat, initialLon]);
+
   const removeLocation = (index) => {
     setSelectedLocations((prev) => prev.filter((_, i) => i !== index));
   };
+  
 
   const now = new Date();
   const localTime = new Date(now.getTime() + 3600000)
@@ -60,45 +57,37 @@ const Weather = ({
     .split(".")[0];
   console.log(localTime);
 
-  // Function to fetch weather data based on latitude and longitude
+  // Fetch Weather for ALL selected Locations
   const fetchWeather = async () => {
+    if (selectedLocations.length === 0) return; // Ensure locations are selected
+    setIsLoading(true);
+
     try {
-      const response = await fetch(
-        `${BASE_URL}/api/weather/?lat=${latitude}&lon=${longitude}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch weather data");
-      }
-      const data = await response.json();
-      setWeatherData(data);
-      setError("");
+        const weatherPromises = selectedLocations.map(async (loc) => {
+            const response = await fetch(
+                `${BASE_URL}/api/weather/?lat=${loc.latitude}&lon=${loc.longitude}`
+            );
+            if (!response.ok) {
+                throw new Error(`Failed to fetch weather data for ${loc.address}`);
+            }
+            const data = await response.json();
+            return { address: loc.address, ...data[0] };
+        });
+
+        const results = await Promise.all(weatherPromises);
+        setWeatherData(results.reduce((acc, curr) => {
+            acc[curr.address] = curr;
+            return acc;
+        }, {}));
+
+        setError("");
     } catch (err) {
-      setError("Failed to fetch weather data");
-      setWeatherData(null);
+        setError("Failed to fetch weather data for multiple locations");
+    } finally {
+        setIsLoading(false);
     }
-  };
-  
-  // Fetch Weather fpr Multiple locations
-  const fetchAllWeather = async () => {
-    try {
-      const weatherPromises = selectedLocations.map(async (loc) => {
-        const response = await fetch(
-          `${BASE_URL}/api/weather/?lat=${loc.latitude}&lon=${loc.longitude}`
-        );
-        if (!response.ok) {
-          throw new Error(`Failed to fetch weather data for ${loc.latitude}, ${loc.longitude}`);
-        }
-        return response.json();
-      });
-  
-      const weatherResults = await Promise.all(weatherPromises);
-      setWeatherData(weatherResults);
-      setError("");
-    } catch (err) {
-      setError("Failed to fetch weather data for multiple locations");
-      setWeatherData(null);
-    }
-  };
+};
+
 
   const fetchTrailWeather = async (activity) => {
     try {
@@ -214,34 +203,46 @@ const Weather = ({
   };
 
   // Function to handle map click events and update latitude & longitude
-  function LocationMarker() {
+  function LocationMarker({ setSelectedLocations, selectedLocations }) {
     useMapEvents({
       click(e) {
-        setLatitude(e.latlng.lat.toFixed(6));
-        setLongitude(e.latlng.lng.toFixed(6));
+        const lat = e.latlng.lat.toFixed(6);
+        const lon = e.latlng.lng.toFixed(6);
+  
+        setSelectedLocations(prev => [
+          ...prev,
+          { latitude: lat, longitude: lon, address: `Lat: ${lat}, Lon: ${lon}` }
+        ]);
       },
     });
-    return latitude && longitude ? (
-      <Marker position={[latitude, longitude]} icon={defaultIcon} />
-    ) : null;
-  }
-
-  // Multiple Markers for Selected Locations 
-  function LocationMarkers() {
-    return (
-      <>
-        {selectedLocations.map((loc, index) => (
-          <Marker key={index} position={[loc.latitude, loc.longitude]} icon={defaultIcon}>
-            <Popup>
-              {loc.address} ({loc.latitude}, {loc.longitude})
-              <button onClick={() => removeLocation(index)} style={{ marginLeft: "10px" }}>Remove</button>
-            </Popup>
-          </Marker>
-        ))}
-      </>
-    );
+  
+    return selectedLocations.map((loc, index) => (
+      <Marker key={index} position={[loc.latitude, loc.longitude]} icon={defaultIcon}>
+        <Popup>{loc.address}</Popup>
+      </Marker>
+    ));
   }
   
+  // Multiple Markers for Selected Locations 
+  function LocationMarkers({ selectedLocations }) {
+    if (!Array.isArray(selectedLocations) || selectedLocations.length === 0) {
+        return null; // Avoid errors if it's not an array
+    }
+
+    return (
+        <>
+            {selectedLocations.map((loc, index) => (
+                <Marker key={index} position={[loc.latitude, loc.longitude]} icon={defaultIcon}>
+                    <Popup>
+                        {loc.address} ({loc.latitude}, {loc.longitude})
+                    </Popup>
+                </Marker>
+            ))}
+        </>
+    );
+}
+
+
 
   return (
     <div
@@ -279,8 +280,11 @@ const Weather = ({
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
-              <LocationMarkers />
-              <LocationMarker />
+            <LocationMarker 
+              selectedLocations={selectedLocations} 
+              setSelectedLocations={setSelectedLocations} 
+            />
+            <LocationMarkers selectedLocations={selectedLocations} />
 
               {/* Map Trail Routes */}
               {topCycleTrails &&
@@ -344,11 +348,9 @@ const Weather = ({
             <button
               onClick={() => {
                 fetchSolar();
-                if (selectedLocations.length > 0) {
-                  fetchAllWeather(); // Fetch for multiple locations
-                } else {
-                  fetchWeather(); // Fetch for single location
-                }
+                if (selectedLocations.length >= 0) {
+                  fetchWeather();
+                } 
               }}
             >
               Get Weather at your location
@@ -378,91 +380,36 @@ const Weather = ({
                 gap: "30px",
               }}
             >
-              {/* Left Side - Weather and Solar Data */}
-              {weatherData && solarData && (
-                <div style={{ flex: 1 }}>
-                  <h2>Current Weather</h2>
-                  <table
-                    style={{
-                      textAlign: "center",
-                      width: "100%",
-                      borderCollapse: "collapse",
-                    }}
-                  >
-                    <tbody>
-                      <tr>
-                        <td>Temperature</td>
-                        <td>Cloudiness</td>
-                        <td>Wind</td>
-                        <td>Precipitation</td>
-                      </tr>
-                      <tr>
-                        <td>{weatherData[0].temperature}°C</td>
-                        <td>{weatherData[0].cloudiness}%</td>
-                        <td>
-                          {weatherData[0].wind_speed} km/h{" "}
-                          {weatherData[0].wind_direction}
-                        </td>
-                        <td>{weatherData[0].rain} mm</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <hr />
-                  <h2>Sun Times</h2>
-                  <table
-                    style={{
-                      textAlign: "center",
-                      width: "100%",
-                      borderCollapse: "collapse",
-                    }}
-                  >
-                    <tbody>
-                      <tr>
-                        <td>Sunrise</td>
-                        <td>Sunset</td>
-                      </tr>
-                      <tr>
-                        <td>{solarData[0].rise}</td>
-                        <td>{solarData[0].set}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Multi-Location Weather Comparison */}
-              {weatherData && selectedLocations.length > 0 && (
+            {/* Multi-Location Weather Comparison */}
+            {weatherData && selectedLocations.length > 0 && (
                 <div style={{ flex: 1 }}>
                   <h2>Weather Comparison</h2>
-                  <table
-                    style={{
-                      textAlign: "center",
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      marginTop: "20px",
-                    }}
-                  >
-                    <thead>
-                      <tr>
-                        <th>Location</th>
-                        <th>Temperature</th>
-                        <th>Cloudiness</th>
-                        <th>Wind Speed</th>
-                        <th>Precipitation</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedLocations.map((loc, index) => (
-                        <tr key={index}>
-                          <td>{loc.latitude}, {loc.longitude}</td>
-                          <td>{weatherData[index]?.temperature}°C</td>
-                          <td>{weatherData[index]?.cloudiness}%</td>
-                          <td>{weatherData[index]?.wind_speed} km/h</td>
-                          <td>{weatherData[index]?.rain} mm</td>
+                  {isLoading ? (
+                    <p>Loading weather data...</p>
+                  ) : (
+                    <table style={{ textAlign: "center", width: "100%", borderCollapse: "collapse", marginTop: "20px" }}>
+                      <thead>
+                        <tr>
+                          <th>Location</th>
+                          <th>Temperature</th>
+                          <th>Cloudiness</th>
+                          <th>Wind Speed</th>
+                          <th>Precipitation</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {selectedLocations.map((loc, index) => (
+                          <tr key={index}>
+                            <td>{loc.address}</td>
+                            <td>{weatherData[loc.address]?.temperature || "-"}°C</td>
+                            <td>{weatherData[loc.address]?.cloudiness || "-"}%</td>
+                            <td>{weatherData[loc.address]?.wind_speed || "-"} km/h</td>
+                            <td>{weatherData[loc.address]?.rain || "-"} mm</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               )}
 

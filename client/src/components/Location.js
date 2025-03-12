@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const Location = ({ updateLocation, initialLocation }) => {
+const Location = ({ updateLocation, selectedLocations,setSelectedLocations, initialLocation  }) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [query_address, setQueryAddress] = useState("");
-  const [selectedLocations, setSelectedLocations] = useState([]);
   const [location, setLocation] = useState(initialLocation || null);
   const [error, setError] = useState(""); 
   const [suggestions, setSuggestions] = useState([]); 
@@ -104,25 +103,24 @@ const Location = ({ updateLocation, initialLocation }) => {
 
   const handleSelectSuggestion = (suggestion) => {
     setQueryAddress(suggestion.label);
-  
+
     setSelectedLocations((prev) => {
-      if (!prev.some((loc) => loc.latitude === suggestion.latitude && loc.longitude === suggestion.longitude)) {
-        const updatedLocations = [...prev, {
-          latitude: suggestion.latitude,
-          longitude: suggestion.longitude,
-          address: suggestion.label
-        }];
-  
-        updateLocation(updatedLocations); //update entire list of locations
-        return updatedLocations;
-      }
-      return prev;
+        if (!Array.isArray(prev)) prev = []; // Ensure prev is an array
+        if (!prev.some((loc) => loc.latitude === suggestion.latitude && loc.longitude === suggestion.longitude)) {
+            return [...prev, {
+                latitude: suggestion.latitude,
+                longitude: suggestion.longitude,
+                address: suggestion.label
+            }];
+        }
+        return prev;
     });
-  
+
     setSuggestions([]);
     setShowSuggestions(false);
-  };
-  
+};
+
+
   
 
   return (

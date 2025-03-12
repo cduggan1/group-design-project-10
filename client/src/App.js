@@ -54,11 +54,14 @@ function App() {
                 <Routes>
                     <Route 
                         path="/" 
-                        element={<Location updateLocation={updateLocation} initialLocation={location} />} 
+                        element={<Location updateLocation={updateLocation} 
+                        selectedLocations={selectedLocations} 
+                        setSelectedLocations={setSelectedLocations}
+                        initialLocation={selectedLocations.length > 0 ? selectedLocations[0] : null}  />} 
                     />
                     <Route 
                         path="/weather" 
-                        element={<Weather selectedLocations={selectedLocations} updateDestination={updateDestination} />} 
+                        element={<Weather  selectedLocations={selectedLocations || []} updateDestination={updateDestination} setSelectedLocations={setSelectedLocations} />}
                     />
                     <Route
                         path="/directions"
