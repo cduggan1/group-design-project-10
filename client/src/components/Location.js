@@ -105,7 +105,7 @@ const Location = ({ updateLocation, initialLocation }) => {
       longitude: suggestion.longitude,
       address: suggestion.label
     });
-    updateLocation(suggestion.latitude, suggestion.longitude, suggestion.label);
+    updateLocation(suggestion.latitude, suggestion.longitude, suggestion.label, true); // Support multiple locations
     setSuggestions([]);
     setShowSuggestions(false);
   };
