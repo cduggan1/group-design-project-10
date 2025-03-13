@@ -212,36 +212,80 @@ def get_top_walking_trails_near_location(request):
 
     return HttpResponse(json.dumps(geojson_data), content_type="application/json")
 
-@cache_page(3600)
+@csrf_exempt
 def get_location_suggestions(request):
     if request.method == "GET":
-        query = request.GET.get("query")
-
+        query = request.GET.get("query", "")
+        
         if not query or len(query) < 2:
             return JsonResponse([], safe=False)
-
+            
+        # Use the geocodify API with improved fuzzy search parameters
         api_key = settings.LOCATION_API_KEY
-        api_url = f"https://api.geocodify.com/v2/autocomplete?api_key={api_key}&q={query}"
+        
+        # Try with higher fuzzy value for better typo tolerance
+        api_url = f"https://api.geocodify.com/v2/suggest?api_key={api_key}&q={query}&fuzzy=2&bias=ie"
         
         try:
-            # Set a timeout to prevent long-running requests
-            response = requests.get(api_url, timeout=2)
-            
+            response = requests.get(api_url)
             if response.status_code != 200:
-                return JsonResponse({"error": "Failed to fetch location suggestions"}, status=response.status_code)
-
+                return JsonResponse([], safe=False)
+                
             data = json.loads(response.text)
             suggestions = []
             
-            for feature in data["response"]["features"]:
+            for feature in data.get("response", {}).get("features", []):
+                props = feature.get("properties", {})
                 suggestions.append({
-                    "label": feature["properties"]["label"],
+                    "id": props.get("id"),
+                    "label": props.get("label"),
+                    "value": props.get("label"),
                     "longitude": feature["geometry"]["coordinates"][0],
                     "latitude": feature["geometry"]["coordinates"][1]
                 })
+            
+            # If we have no results or very few, also try with common Irish city spelling corrections
+            if len(suggestions) < 2:
+                common_cities = {
+                    "galwy": "galway", 
+                    "dubln": "dublin", 
+                    "dablinn": "dublin",
+                    "cark": "cork", 
+                    "limerik": "limerick",
+                    "waterfrd": "waterford",
+                    "kilkeny": "kilkenny",
+                    "slgo": "sligo"
+                }
+                
+                corrected_query = None
+                # Check if the query is a misspelling of a common city
+                for misspelled, correct in common_cities.items():
+                    if query.lower().startswith(misspelled) or misspelled.startswith(query.lower()):
+                        corrected_query = correct
+                        break
+                
+                # If we found a potential correction, try again with the corrected city name
+                if corrected_query:
+                    corrected_url = f"https://api.geocodify.com/v2/suggest?api_key={api_key}&q={corrected_query}&bias=ie"
+                    corrected_response = requests.get(corrected_url)
+                    
+                    if corrected_response.status_code == 200:
+                        corrected_data = json.loads(corrected_response.text)
+                        
+                        for feature in corrected_data.get("response", {}).get("features", []):
+                            props = feature.get("properties", {})
+                            # Add a note that this was a correction
+                            label = props.get("label")
+                            suggestions.append({
+                                "id": props.get("id"),
+                                "label": f"{label} (Did you mean: {corrected_query.title()}?)",
+                                "value": label,
+                                "longitude": feature["geometry"]["coordinates"][0],
+                                "latitude": feature["geometry"]["coordinates"][1]
+                            })
                 
             return JsonResponse(suggestions, safe=False)
-        except requests.exceptions.Timeout:
-            return JsonResponse({"error": "Request timed out"}, status=408)
+            
         except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+            print(f"Error fetching suggestions: {str(e)}")
+            return JsonResponse([], safe=False)
