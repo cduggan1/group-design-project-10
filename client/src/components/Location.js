@@ -135,6 +135,7 @@ const Location = ({ updateLocation, initialLocation }) => {
         );
       }
     }
+
     
     const maxLength = Math.max(s1.length, s2.length);
     return maxLength === 0 ? 1 : 1 - matrix[s1.length][s2.length] / maxLength;
@@ -242,6 +243,18 @@ const Location = ({ updateLocation, initialLocation }) => {
       });
       updateLocation(suggestion.latitude, suggestion.longitude, suggestion.value || suggestion.label);
     }    
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
+  };
+
+  const handleFocus = () => {
+    if (query_address.length >= 2 && suggestions.length > 0) {
+      setShowSuggestions(true);
+    }
   };
 
   const handleBlur = () => {
