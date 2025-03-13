@@ -207,7 +207,7 @@ const Location = ({ updateLocation, initialLocation }) => {
         <div style={{ position: "relative" }}>
           <input
             type="text"
-            placeholder="Enter city or address (try with typos like 'galwy')"
+            placeholder="Enter city or address"
             value={query_address}
             onChange={handleInputChange}
             onBlur={handleBlur}
