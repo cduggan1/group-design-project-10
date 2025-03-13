@@ -3,15 +3,15 @@ import React, { useState, useEffect, useRef } from "react";
 const Location = ({ updateLocation, initialLocation }) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [query_address, setQueryAddress] = useState("");
-  const [location, setLocation] = useState(initialLocation || null); 
-  const [error, setError] = useState(""); 
-  const [suggestions, setSuggestions] = useState([]); 
+  const [location, setLocation] = useState(initialLocation || null);
+  const [error, setError] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const suggestionsCache = useRef({});
   const debounceTimerRef = useRef(null);
-  
+
   useEffect(() => {
     if (initialLocation) {
       setLocation(initialLocation);
@@ -26,9 +26,51 @@ const Location = ({ updateLocation, initialLocation }) => {
     };
   }, []);
 
+  const fetchGpsLocation = async () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation({ latitude, longitude, address: "Fetching address..." });
+        updateLocation(latitude, longitude, "Fetching address...");
+
+        // Placeholder function for geocoding API
+        const address = await getGeocodedAddress(latitude, longitude);
+        setLocation({ latitude, longitude, address });
+        updateLocation(latitude, longitude, address);
+      },
+      (err) => {
+        setError("Failed to retrieve GPS location");
+      }
+    );
+  };
+
+  const getGeocodedAddress = async (lat, lon) => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/api/reverse-address?latitude=${lat}&longitude=${lon}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch address");
+      }
+      const data = await response.json();
+      console.log(data);
+      return data[0].address;
+    } catch (err) {
+      console.error("Error fetching address:", err);
+      return "Address not found";
+    }
+  };
+
   const fetchCoordinates = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/address/?address=${query_address}`);
+      const response = await fetch(
+        `${BASE_URL}/api/address/?address=${query_address}`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch address");
       }
@@ -41,6 +83,33 @@ const Location = ({ updateLocation, initialLocation }) => {
       setLocation(null);
     }
   };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setQueryAddress(value);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    if (value.length >= 2) {
+      if (suggestionsCache.current[value]) {
+        setSuggestions(suggestionsCache.current[value]);
+        setShowSuggestions(true);
+        return;
+      }
+
+      setIsLoading(true);
+
+      debounceTimerRef.current = setTimeout(() => {
+        fetchSuggestions(value);
+      }, 150);
+    } else {
+      setSuggestions([]);
+      setIsLoading(false);
+      setShowSuggestions(false);
+    }
+  }
 
   const calculateSimilarity = (str1, str2) => {
     const s1 = str1.toLowerCase();
@@ -66,6 +135,7 @@ const Location = ({ updateLocation, initialLocation }) => {
         );
       }
     }
+
     
     const maxLength = Math.max(s1.length, s2.length);
     return maxLength === 0 ? 1 : 1 - matrix[s1.length][s2.length] / maxLength;
@@ -111,27 +181,28 @@ const Location = ({ updateLocation, initialLocation }) => {
       if (!response.ok) {
         throw new Error("Failed to fetch suggestions");
       }
-      
+
       const data = await response.json();
-      
-      let combinedSuggestions = [];
-      
+
+      let combinedSuggestions = [...data];
+
       if (data.length < 2 && clientSideSuggestions.length > 0) {
         combinedSuggestions = [...clientSideSuggestions];
       }
-      
+
       data.forEach(apiSuggestion => {
         const isDuplicate = combinedSuggestions.some(
-          s => s.label.toLowerCase().includes(apiSuggestion.label.toLowerCase())
+          s => s.label.toLowerCase() === apiSuggestion.label.toLowerCase()
         );
-        
+
         if (!isDuplicate) {
           combinedSuggestions.push(apiSuggestion);
         }
       });
-      
+
       suggestionsCache.current[query] = combinedSuggestions;
       setSuggestions(combinedSuggestions);
+
       setShowSuggestions(true);
     } catch (err) {
       console.error("Error fetching suggestions:", err);
@@ -141,25 +212,13 @@ const Location = ({ updateLocation, initialLocation }) => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setQueryAddress(value);
-    
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-    
-    debounceTimerRef.current = setTimeout(() => {
-      fetchSuggestions(value);
-    }, 300);
-  };
 
   const handleSelectSuggestion = (suggestion) => {
     setQueryAddress(suggestion.value || suggestion.label);
-    
+
     if (suggestion.isLocalMatch) {
       setIsLoading(true);
-      fetch(`${BASE_URL}/api/address/?address=${encodeURIComponent(suggestion.value)}`)
+      fetch(`${BASE_URL}/api/address/?address=${encodeURIComponent(suggestion.value || suggestion.label)}`)
         .then(response => response.json())
         .then(data => {
           if (data && data.length > 0) {
@@ -183,9 +242,7 @@ const Location = ({ updateLocation, initialLocation }) => {
         address: suggestion.value || suggestion.label
       });
       updateLocation(suggestion.latitude, suggestion.longitude, suggestion.value || suggestion.label);
-    }
-    
-    setShowSuggestions(false);
+    }    
   };
 
   const handleBlur = () => {
@@ -200,10 +257,19 @@ const Location = ({ updateLocation, initialLocation }) => {
     }
   };
 
+
   return (
-    <div style={{ display: "flex", justifyContent: "center", padding: "20px" }}>
-      <div style={{ flex: 1, maxWidth: "600px", textAlign: "center" }}>
-        <h2>Find a Location</h2>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        gap: "30px",
+        padding: "20px",
+      }}
+    >
+      {}
+      <div style={{ flex: 1, textAlign: "center" }}>
+        <h2>Set Location</h2>
         <div style={{ position: "relative" }}>
           <input
             type="text"
@@ -220,28 +286,37 @@ const Location = ({ updateLocation, initialLocation }) => {
               border: "1px solid #ccc"
             }}
           />
-          
+
+          {}
           {isLoading && (
-            <div style={{ position: "absolute", right: "10px", top: "10px" }}>
+            <div
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#666",
+              }}
+            >
               Loading...
             </div>
           )}
-          
+
+          {}
           {showSuggestions && suggestions.length > 0 && (
-            <div style={{
-              position: "absolute",
-              top: "100%",
-              left: 0,
-              width: "100%",
-              maxHeight: "200px",
-              overflowY: "auto",
-              backgroundColor: "white",
-              border: "1px solid #ccc",
-              borderTop: "none",
-              borderRadius: "0 0 4px 4px",
-              zIndex: 10,
-              boxShadow: "0px 4px 8px rgba(0,0,0,0.1)"
-            }}>
+            <div
+              style={{
+                position: "absolute",
+                width: "100%",
+                maxHeight: "200px",
+                overflowY: "auto",
+                backgroundColor: "white",
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                zIndex: 10,
+                boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+              }}
+            >
               {suggestions.map((suggestion, index) => (
                 <div
                   key={index}
@@ -261,7 +336,7 @@ const Location = ({ updateLocation, initialLocation }) => {
             </div>
           )}
         </div>
-        
+          
         <button 
           onClick={fetchCoordinates}
           style={{
@@ -276,7 +351,22 @@ const Location = ({ updateLocation, initialLocation }) => {
         >
           Get Coordinates
         </button>
-
+        
+        <button 
+          onClick={fetchGpsLocation}
+          style={{
+            marginTop: "15px",
+            padding: "8px 16px",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer"
+          }}
+        >
+        Use GPS Location
+        </button>
+        
         {location ? (
           <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f0f8ff", borderRadius: "4px" }}>
             <p><strong>Current location:</strong> {location.address}<br />
@@ -288,7 +378,14 @@ const Location = ({ updateLocation, initialLocation }) => {
       </div>
 
       {error && (
-        <div style={{ position: "absolute", bottom: "20px", left: "20px", color: "red", backgroundColor: "#fff", padding: "10px", borderRadius: "4px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+        <div
+          style={{
+            position: "absolute",
+            bottom: "20px",
+            left: "20px",
+            color: "red",
+          }}
+        >
           <p>{error}</p>
         </div>
       )}

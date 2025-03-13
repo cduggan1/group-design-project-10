@@ -37,6 +37,30 @@ def get_address(request):
         values.append({"longitude": longitude, "latitude": latitude, "address": address})
         return JsonResponse(values, safe=False)
     
+def get_reverse_address(request):
+    if request.method == "GET":
+        latitude = request.GET.get("latitude")
+        longitude = request.GET.get("longitude")
+
+        if not latitude or not longitude:
+            return JsonResponse({"error": "Latitude and Longitude required"}, status=400)
+
+        api_key = settings.LOCATION_API_KEY
+
+        api_url = f"https://api.geocodify.com/v2/reverse?api_key={api_key}&lat={latitude}&lng={longitude}"
+        response = requests.get(api_url)
+
+        if response.status_code != 200:
+            return JsonResponse({"error": "Failed to fetch weather data"}, status=response.status_code)
+        
+        data = json.loads(response.text)
+        address = data["response"]["features"][0]["properties"]["label"]
+        values = []
+
+        values.append({"longitude": longitude, "latitude": latitude, "address": address})
+        return JsonResponse(values, safe=False)
+    
+
 def get_directions(request):
     if request.method == "GET":
         start = request.GET.get("from")
