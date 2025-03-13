@@ -257,17 +257,6 @@ const Location = ({ updateLocation, initialLocation }) => {
     }
   };
 
-  const handleBlur = () => {
-    setTimeout(() => {
-      setShowSuggestions(false);
-    }, 200);
-  };
-
-  const handleFocus = () => {
-    if (query_address.length >= 2 && suggestions.length > 0) {
-      setShowSuggestions(true);
-    }
-  };
 
   return (
     <div
