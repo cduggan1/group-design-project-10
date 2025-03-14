@@ -1,6 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 
-const Location = ({ updateLocation, initialLocation }) => {
+const Location = ({
+  updateLocation,
+  initialLocation,
+  fetchDefaultLocation,
+  saveDefaultLocation,
+}) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [query_address, setQueryAddress] = useState("");
   const [location, setLocation] = useState(initialLocation || null);
@@ -37,8 +42,6 @@ const Location = ({ updateLocation, initialLocation }) => {
         const { latitude, longitude } = position.coords;
         setLocation({ latitude, longitude, address: "Fetching address..." });
         updateLocation(latitude, longitude, "Fetching address...");
-
-        // Placeholder function for geocoding API
         const address = await getGeocodedAddress(latitude, longitude);
         setLocation({ latitude, longitude, address });
         updateLocation(latitude, longitude, address);
@@ -48,6 +51,7 @@ const Location = ({ updateLocation, initialLocation }) => {
       }
     );
   };
+  
 
   const getGeocodedAddress = async (lat, lon) => {
     try {
@@ -213,6 +217,16 @@ const Location = ({ updateLocation, initialLocation }) => {
   };
 
 
+  const buttonStyle = {
+    padding: "8px 16px",
+    backgroundColor: "#4CAF50",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    textAlign: "center"
+  };
+
   const handleSelectSuggestion = (suggestion) => {
     setQueryAddress(suggestion.value || suggestion.label);
 
@@ -336,37 +350,21 @@ const Location = ({ updateLocation, initialLocation }) => {
             </div>
           )}
         </div>
-          
-        <button 
-          onClick={fetchCoordinates}
-          style={{
-            marginTop: "15px",
-            padding: "8px 16px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer"
-          }}
-        >
-          Get Coordinates
-        </button>
-        
-        <button 
-          onClick={fetchGpsLocation}
-          style={{
-            marginTop: "15px",
-            padding: "8px 16px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer"
-          }}
-        >
-        Use GPS Location
-        </button>
-        
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "1fr 1fr", 
+          gap: "15px", 
+          marginTop: "15px",
+          justifyContent: "center" // Centers the buttons in the grid
+        }}>
+          <button onClick={fetchCoordinates} style={buttonStyle}>Get Coordinates</button>
+          <button onClick={fetchGpsLocation} style={buttonStyle}>Use GPS Location</button>
+          <button onClick={saveDefaultLocation} style={buttonStyle}>Save as Default</button>
+          <button onClick={fetchDefaultLocation} style={buttonStyle}>Fetch Default Location</button>
+        </div>
+
+
+        {}
         {location ? (
           <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f0f8ff", borderRadius: "4px" }}>
             <p><strong>Current location:</strong> {location.address}<br />
