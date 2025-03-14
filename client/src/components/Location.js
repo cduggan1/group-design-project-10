@@ -51,6 +51,7 @@ const Location = ({
       }
     );
   };
+  
 
   const getGeocodedAddress = async (lat, lon) => {
     try {
@@ -145,6 +146,17 @@ const Location = ({
     }
   };
 
+  const buttonStyle = {
+    padding: "8px 16px",
+    backgroundColor: "#4CAF50",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    textAlign: "center"
+  };
+
+
   const handleSelectSuggestion = (suggestion) => {
     setQueryAddress(suggestion.label);
     setLocation({
@@ -235,11 +247,20 @@ const Location = ({
             </div>
           )}
         </div>
+        
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "1fr 1fr", 
+          gap: "15px", 
+          marginTop: "15px",
+          justifyContent: "center" // Centers the buttons in the grid
+        }}>
+          <button onClick={fetchCoordinates} style={buttonStyle}>Get Coordinates</button>
+          <button onClick={fetchGpsLocation} style={buttonStyle}>Use GPS Location</button>
+          <button onClick={saveDefaultLocation} style={buttonStyle}>Save as Default</button>
+          <button onClick={fetchDefaultLocation} style={buttonStyle}>Fetch Default Location</button>
+        </div>
 
-        <button onClick={fetchCoordinates}>Get Coordinates</button>
-        <button onClick={fetchGpsLocation}>Use GPS Location</button>
-        <button onClick={saveDefaultLocation}>Save as Default</button>
-        <button onClick={fetchDefaultLocation}>Fetch Default Location</button>
 
         {}
         {location ? (
