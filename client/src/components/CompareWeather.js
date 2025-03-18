@@ -60,15 +60,18 @@ const removeLocation = (address) => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h2>Compare Weather</h2>
-       <div>
-        <input
-          type="text"
-          placeholder="Enter a location"
-          value={newLocation}
-          onChange={(e) => setNewLocation(e.target.value)}
-        />
-        <button onClick={addLocation}>Add Location</button>
+      {/* Wrap heading + search in a flex container */}
+      <div className="compare-weather-header">
+        <h2 style={{ margin: 0 }}>Compare Weather</h2>
+        <div className="compare-weather-search">
+          <input
+            type="text"
+            placeholder="Enter a location"
+            value={newLocation}
+            onChange={(e) => setNewLocation(e.target.value)}
+          />
+          <button onClick={addLocation}>Add Location</button>
+        </div>
       </div>
 
       {/* Weather comparison table */}
