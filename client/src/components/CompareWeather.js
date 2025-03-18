@@ -73,10 +73,10 @@ const CompareWeather = ({ BASE_URL }) => {
     // 1) Define a “score” function that weighs temperature, precipitation, wind, and cloudiness
     const calculateScore = (weather) => {
         // Example formula:
-        // Higher temperature is good, so +2 per °C
-        // Rain is bad, so -5 per mm
-        // Wind is somewhat bad, so -0.2 per km/h
-        // Cloudiness is slightly bad, so -0.1 per %
+        // +2 per °C
+        // -5 per mm precipitation
+        // -0.2 per km/h wind speed
+        // -0.1 per % cloudiness
         const { temperature, rain, wind_speed, cloudiness } = weather;
         return temperature * 2 - rain * 5 - wind_speed * 0.2 - cloudiness * 0.1;
     };
@@ -121,6 +121,25 @@ const CompareWeather = ({ BASE_URL }) => {
                     />
 
                 </div>
+            </div>
+            {/* Score Key (explanation) */}
+            <div
+                style={{
+                    maxWidth: "600px",
+                    margin: "20px auto",
+                    backgroundColor: "#fff3cd",
+                    border: "1px solid #ffeeba",
+                    borderRadius: "4px",
+                    padding: "15px",
+                }}
+            >
+                <h4>Score Key (Higher is Better)</h4>
+                <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                    <li>+2 points for each °C of temperature</li>
+                    <li>-5 points for each mm of precipitation</li>
+                    <li>-0.2 points for each km/h of wind speed</li>
+                    <li>-0.1 points for each % of cloudiness</li>
+                </ul>
             </div>
             {/* If there's a “best city,” display it in a light-blue box */}
             {bestCity && (
