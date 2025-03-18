@@ -183,6 +183,8 @@ const CompareWeather = ({ BASE_URL }) => {
                                     <th>Cloudiness</th>
                                     <th>Wind</th>
                                     <th>Precipitation</th>
+                                    <th>Score</th>
+                                    <th>Remove</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -216,6 +218,7 @@ const CompareWeather = ({ BASE_URL }) => {
                                                 {weather[0].wind_speed} km/h {weather[0].wind_direction}
                                             </td>
                                             <td>{weather[0].rain} mm</td>
+                                            <td>{score.toFixed(2)}</td>
                                             <td>
                                                 <button
                                                     onClick={() => removeLocation(loc.address)}
