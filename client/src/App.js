@@ -4,6 +4,7 @@ import Weather from "./components/Weather";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Location from "./components/Location";
 import Directions from "./components/Directions";
+import CompareWeather from "./components/CompareWeather";
 
 function App() {
   // State for user location
@@ -89,6 +90,10 @@ function App() {
             <li className="arrow">→</li>
             <li style={{ display: "flex", alignItems: "center" }}>
               <Link to="/directions">Directions</Link>
+            </li>
+            <li className="arrow">→</li>
+            <li style={{ display: "flex", alignItems: "center" }}>
+              <Link to="/directions">Compare Weather</Link>
             </li>
           </ul>
         </nav>
