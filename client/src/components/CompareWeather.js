@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from "react";
 import "./CompareWeather.css";
+import Location from "./Location";
 
 const CompareWeather = ({ BASE_URL }) => {
   const [compareLocations, setCompareLocations] = useState([]);
   const [weatherData, setWeatherData] = useState({}); // Use an object keyed by address
   const [newLocation, setNewLocation] = useState("");
+
+   // When the Location component updates the location,
+  // add it to the compareLocations array.
+  const handleLocationUpdate = (lat, lon, address) => {
+    // Prevent duplicate entries (optional)
+    if (!compareLocations.find((loc) => loc.address === address)) {
+      setCompareLocations((prev) => [
+        ...prev,
+        { latitude: lat, longitude: lon, address },
+      ]);
+    }
+  };
 
   // Function to add a location after fetching its coordinates
   const addLocation = async () => {
@@ -64,13 +77,15 @@ const removeLocation = (address) => {
       <div className="compare-weather-header">
         <h2 className="compare-weather-title">Compare Weather</h2>
         <div className="compare-weather-search">
-          <input
-            type="text"
-            placeholder="Enter a location"
-            value={newLocation}
-            onChange={(e) => setNewLocation(e.target.value)}
-          />
-          <button onClick={addLocation}>Add Location</button>
+        {/* Render the Location component as your search bar.
+            Pass updateLocation prop that handles the location selection */}
+        <Location
+          updateLocation={handleLocationUpdate}
+          initialLocation={null}
+          fetchDefaultLocation={() => {}}
+          saveDefaultLocation={() => {}}
+        />
+
         </div>
         </div>
 
