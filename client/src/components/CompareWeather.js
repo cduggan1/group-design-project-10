@@ -75,8 +75,8 @@ const removeLocation = (address) => {
         </div>
 
       {/* Weather comparison table */}
-        <div style={{ marginTop: "20px" }}>
-            {compareLocations.length === 0 ? (
+      <div style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
+        {compareLocations.length === 0 ? (
             <p>No locations added yet.</p>
             ) : (
           <div className="compare-weather-container">
