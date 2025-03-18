@@ -70,30 +70,37 @@ const CompareWeather = ({ BASE_URL }) => {
             return updated;
         });
     };
-    // Determine which city is “best” to travel to
-    // Here we define “best” = lowest precipitation
+    // 1) Define a “score” function that weighs temperature, precipitation, wind, and cloudiness
+    const calculateScore = (weather) => {
+        // Example formula:
+        // Higher temperature is good, so +2 per °C
+        // Rain is bad, so -5 per mm
+        // Wind is somewhat bad, so -0.2 per km/h
+        // Cloudiness is slightly bad, so -0.1 per %
+        const { temperature, rain, wind_speed, cloudiness } = weather;
+        return temperature * 2 - rain * 5 - wind_speed * 0.2 - cloudiness * 0.1;
+    };
+
+    // 2) Find the best city each render based on the highest “score”
     const getBestCity = () => {
-        if (compareLocations.length === 0) return null;
-
         let bestCity = null;
-        let lowestRain = Number.POSITIVE_INFINITY;
+        let bestScore = -Infinity;
 
-        compareLocations.forEach((loc) => {
-            const weather = weatherData[loc.address];
-            if (weather && weather.length > 0) {
-                const cityRain = weather[0].rain;
-                if (cityRain < lowestRain) {
-                    lowestRain = cityRain;
-                    // Merge location info + the first weather record
-                    bestCity = { ...loc, ...weather[0] };
+        for (const loc of compareLocations) {
+            const wData = weatherData[loc.address];
+            if (wData && wData.length > 0) {
+                const score = calculateScore(wData[0]);
+                if (score > bestScore) {
+                    bestScore = score;
+                    // Merge location details + first weather record
+                    bestCity = { ...loc, ...wData[0], score };
                 }
             }
-        });
+        }
 
         return bestCity;
     };
 
-    // Call the helper function once
     const bestCity = getBestCity();
 
     return (
@@ -115,7 +122,7 @@ const CompareWeather = ({ BASE_URL }) => {
 
                 </div>
             </div>
-            {/* If we found a “best city,” display it in a light blue box */}
+            {/* If there's a “best city,” display it in a light-blue box */}
             {bestCity && (
                 <div
                     style={{
@@ -128,7 +135,8 @@ const CompareWeather = ({ BASE_URL }) => {
                     }}
                 >
                     <h3>
-                        The best city to travel to based on comparison is {bestCity.address}
+                        The best city to travel to based on overall comparison is{" "}
+                        {bestCity.address}
                     </h3>
                     <p>Temperature: {bestCity.temperature}°C</p>
                     <p>Cloudiness: {bestCity.cloudiness}%</p>
@@ -136,6 +144,9 @@ const CompareWeather = ({ BASE_URL }) => {
                         Wind: {bestCity.wind_speed} km/h {bestCity.wind_direction}
                     </p>
                     <p>Precipitation: {bestCity.rain} mm</p>
+                    <p style={{ fontStyle: "italic" }}>
+                        (Score: {bestCity.score.toFixed(2)})
+                    </p>
                 </div>
             )}
 
