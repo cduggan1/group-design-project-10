@@ -36,10 +36,11 @@
 
 .compare-weather-header {
     display: flex;
+    flex-direction: column;
     /* enables flexbox */
     align-items: center;
     /* vertically centers items in the row */
-    justify-content: space-between;
+    /* justify-content: space-between; */
     /* pushes heading to left, search to right */
     margin-bottom: 20px;
 }

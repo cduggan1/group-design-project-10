@@ -62,7 +62,7 @@ const removeLocation = (address) => {
     <div style={{ padding: "20px" }}>
       {/* Wrap heading + search in a flex container */}
       <div className="compare-weather-header">
-        <h2 style={{ margin: 0 }}>Compare Weather</h2>
+        <h2 className="compare-weather-title">Compare Weather</h2>
         <div className="compare-weather-search">
           <input
             type="text"
@@ -72,13 +72,13 @@ const removeLocation = (address) => {
           />
           <button onClick={addLocation}>Add Location</button>
         </div>
-      </div>
+        </div>
 
       {/* Weather comparison table */}
-      <div style={{ marginTop: "20px" }}>
-        {compareLocations.length === 0 ? (
-          <p>No locations added yet.</p>
-        ) : (
+        <div style={{ marginTop: "20px" }}>
+            {compareLocations.length === 0 ? (
+            <p>No locations added yet.</p>
+            ) : (
           <div className="compare-weather-container">
             <table className="compare-weather-table">
               <thead>
