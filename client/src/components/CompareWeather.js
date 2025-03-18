@@ -122,57 +122,66 @@ const CompareWeather = ({ BASE_URL }) => {
 
                 </div>
             </div>
-            {/* Score Key (explanation) */}
-            <div
-                style={{
-                    maxWidth: "600px",
-                    margin: "20px auto",
-                    backgroundColor: "#fff3cd",
-                    border: "1px solid #ffeeba",
-                    borderRadius: "4px",
-                    padding: "15px",
-                }}
-            >
-                <h4>Score Key (Higher is Better)</h4>
-                <ul style={{ margin: 0, paddingLeft: "20px" }}>
-                    <li>+2 points for each °C of temperature</li>
-                    <li>-5 points for each mm of precipitation</li>
-                    <li>-0.2 points for each km/h of wind speed</li>
-                    <li>-0.1 points for each % of cloudiness</li>
-                </ul>
-            </div>
+
             {/* If there's a “best city,” display it in a light-blue box */}
-            {bestCity && (
+            { bestCity && (
                 <div
                     style={{
-                        backgroundColor: "#e0f0ff",
-                        padding: "15px",
-                        marginTop: "20px",
-                        borderRadius: "4px",
-                        maxWidth: "600px",
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",  // Two equal-width columns
+                        gap: "20px",
+                        alignItems: "stretch",          // Ensures columns match the tallest box
                         margin: "20px auto",
+                        maxWidth: "1000px",
                     }}
                 >
-                    <h3>
-                        The best city to travel to based on overall comparison is{" "}
-                        {bestCity.address}
-                    </h3>
-                    <p>Temperature: {bestCity.temperature}°C</p>
-                    <p>Cloudiness: {bestCity.cloudiness}%</p>
-                    <p>
-                        Wind: {bestCity.wind_speed} km/h {bestCity.wind_direction}
-                    </p>
-                    <p>Precipitation: {bestCity.rain} mm</p>
-                    <p style={{ fontStyle: "italic" }}>
-                        (Score: {bestCity.score.toFixed(2)})
-                    </p>
+                    {/* Score Key (yellow box) */}
+                    <div
+                        style={{
+                            backgroundColor: "#fff3cd",
+                            border: "1px solid #ffeeba",
+                            borderRadius: "4px",
+                            padding: "15px",
+                        }}
+                    >
+                        <h4>Score Key (Higher is Better)</h4>
+                        <ul style={{ margin: 0, paddingLeft: "20px" }}>
+                            <li>+2 points for each °C of temperature</li>
+                            <li>-5 points for each mm of precipitation</li>
+                            <li>-0.2 points for each km/h of wind speed</li>
+                            <li>-0.1 points for each % of cloudiness</li>
+                        </ul>
+                    </div>
+
+                    {/* Best City (blue box) */}
+                    <div
+                        style={{
+                            backgroundColor: "#e0f0ff",
+                            borderRadius: "4px",
+                            padding: "15px",
+                        }}
+                    >
+                        <h3>
+                            The best city to travel to based on overall comparison is{" "}
+                            {bestCity.address}
+                        </h3>
+                        <p>Temperature: {bestCity.temperature}°C</p>
+                        <p>Cloudiness: {bestCity.cloudiness}%</p>
+                        <p>
+                            Wind: {bestCity.wind_speed} km/h {bestCity.wind_direction}
+                        </p>
+                        <p>Precipitation: {bestCity.rain} mm</p>
+                        <p style={{ fontStyle: "italic" }}>
+                            (Score: {bestCity.score.toFixed(2)})
+                        </p>
+                    </div>
                 </div>
             )}
 
             {/* Weather comparison table */}
             <div style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}>
                 {compareLocations.length === 0 ? (
-                    <p>No locations added yet.</p>
+                    <p></p>
                 ) : (
                     <div className="compare-weather-container">
                         <table className="compare-weather-table">
