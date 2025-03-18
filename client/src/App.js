@@ -93,7 +93,7 @@ function App() {
             </li>
             <li className="arrow">→</li>
             <li style={{ display: "flex", alignItems: "center" }}>
-              <Link to="/directions">Compare Weather</Link>
+              <Link to="/compare">Compare Weather</Link>
             </li>
           </ul>
         </nav>
