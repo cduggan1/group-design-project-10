@@ -45,6 +45,19 @@ const CompareWeather = ({ BASE_URL }) => {
     });
   }, [compareLocations, BASE_URL]);
 
+// Remove a location from the table and weatherData
+const removeLocation = (address) => {
+    setCompareLocations((prev) =>
+      prev.filter((loc) => loc.address !== address)
+    );
+
+    setWeatherData((prev) => {
+      const updated = { ...prev };
+      delete updated[address];
+      return updated;
+    });
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h2>Compare Weather</h2>
@@ -84,10 +97,17 @@ const CompareWeather = ({ BASE_URL }) => {
                       <tr key={loc.address}>
                         <td>{loc.address}</td>
                         <td colSpan="4">Loading...</td>
+                        <td>
+                          <button
+                            onClick={() => removeLocation(loc.address)}
+                            style={{ cursor: "pointer" }}
+                          >
+                            X
+                          </button>
+                        </td>
                       </tr>
                     );
                   }
-
                   // If weather data is loaded, display the first data entry
                   return (
                     <tr key={loc.address}>
@@ -98,6 +118,14 @@ const CompareWeather = ({ BASE_URL }) => {
                         {weather[0].wind_speed} km/h {weather[0].wind_direction}
                       </td>
                       <td>{weather[0].rain} mm</td>
+                      <td>
+                        <button
+                          onClick={() => removeLocation(loc.address)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          X
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -109,5 +137,4 @@ const CompareWeather = ({ BASE_URL }) => {
     </div>
   );
 };
-
 export default CompareWeather;
