@@ -208,6 +208,8 @@ const CompareWeather = ({ BASE_URL }) => {
                                             </tr>
                                         );
                                     }
+                                    const rowScore = calculateScore(weather[0]);
+
                                     // If weather data is loaded, display the first data entry
                                     return (
                                         <tr key={loc.address}>
@@ -218,7 +220,7 @@ const CompareWeather = ({ BASE_URL }) => {
                                                 {weather[0].wind_speed} km/h {weather[0].wind_direction}
                                             </td>
                                             <td>{weather[0].rain} mm</td>
-                                            <td>{score.toFixed(2)}</td>
+                                            <td>{rowScore.toFixed(2)}</td>
                                             <td>
                                                 <button
                                                     onClick={() => removeLocation(loc.address)}
