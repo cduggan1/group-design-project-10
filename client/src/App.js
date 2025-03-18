@@ -131,6 +131,14 @@ function App() {
               />
             }
           />
+          <Route
+            path="/compare"
+            element={
+              <CompareWeather
+                BASE_URL={process.env.REACT_APP_API_URL} 
+              />
+            }
+          />
         </Routes>
       </div>
     </Router>
