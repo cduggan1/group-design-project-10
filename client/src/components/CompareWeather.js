@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "./CompareWeather.css";
 
 const CompareWeather = ({ BASE_URL }) => {
   const [compareLocations, setCompareLocations] = useState([]);
@@ -47,7 +48,7 @@ const CompareWeather = ({ BASE_URL }) => {
   return (
     <div style={{ padding: "20px" }}>
       <h2>Compare Weather</h2>
-      <div>
+       <div>
         <input
           type="text"
           placeholder="Enter a location"
@@ -56,43 +57,53 @@ const CompareWeather = ({ BASE_URL }) => {
         />
         <button onClick={addLocation}>Add Location</button>
       </div>
+
+      {/* Weather comparison table */}
       <div style={{ marginTop: "20px" }}>
         {compareLocations.length === 0 ? (
           <p>No locations added yet.</p>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th>Location</th>
-                <th>Temperature</th>
-                <th>Cloudiness</th>
-                <th>Wind</th>
-                <th>Precipitation</th>
-              </tr>
-            </thead>
-            <tbody>
-              {compareLocations.map((loc) => {
-                const weather = weatherData[loc.address];
-                return (
-                  <tr key={loc.address}>
-                    <td>{loc.address}</td>
-                    {weather ? (
-                      <>
-                        <td>{weather[0].temperature}°C</td>
-                        <td>{weather[0].cloudiness}%</td>
-                        <td>
-                          {weather[0].wind_speed} km/h {weather[0].wind_direction}
-                        </td>
-                        <td>{weather[0].rain} mm</td>
-                      </>
-                    ) : (
-                      <td colSpan="4">Loading...</td>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="compare-weather-container">
+            <table className="compare-weather-table">
+              <thead>
+                <tr>
+                  <th>Location</th>
+                  <th>Temperature</th>
+                  <th>Cloudiness</th>
+                  <th>Wind</th>
+                  <th>Precipitation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {compareLocations.map((loc) => {
+                  const weather = weatherData[loc.address];
+
+                  if (!weather) {
+                    // If weather data not loaded yet, show placeholders
+                    return (
+                      <tr key={loc.address}>
+                        <td>{loc.address}</td>
+                        <td colSpan="4">Loading...</td>
+                      </tr>
+                    );
+                  }
+
+                  // If weather data is loaded, display the first data entry
+                  return (
+                    <tr key={loc.address}>
+                      <td>{loc.address}</td>
+                      <td>{weather[0].temperature}°C</td>
+                      <td>{weather[0].cloudiness}%</td>
+                      <td>
+                        {weather[0].wind_speed} km/h {weather[0].wind_direction}
+                      </td>
+                      <td>{weather[0].rain} mm</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
