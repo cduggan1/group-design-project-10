@@ -5,6 +5,8 @@ const Location = ({
   initialLocation,
   fetchDefaultLocation,
   saveDefaultLocation,
+  showHeader = true,
+  showButtons = true,
 }) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [query_address, setQueryAddress] = useState("");
@@ -283,7 +285,7 @@ const Location = ({
     >
       {}
       <div style={{ flex: 1, textAlign: "center" }}>
-        <h2>Set Location</h2>
+        {showHeader && <h2>Set Location</h2>}
         <div style={{ position: "relative" }}>
           <input
             type="text"
@@ -350,6 +352,8 @@ const Location = ({
             </div>
           )}
         </div>
+        {/* Only show the green buttons if showButtons === true */}
+        {showButtons && (
         <div style={{ 
           display: "grid", 
           gridTemplateColumns: "1fr 1fr", 
@@ -362,9 +366,8 @@ const Location = ({
           <button onClick={saveDefaultLocation} style={buttonStyle}>Save as Default</button>
           <button onClick={fetchDefaultLocation} style={buttonStyle}>Fetch Default Location</button>
         </div>
+        )}
 
-
-        {}
         {location ? (
           <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f0f8ff", borderRadius: "4px" }}>
             <p><strong>Current location:</strong> {location.address}<br />

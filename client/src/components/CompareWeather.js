@@ -84,6 +84,8 @@ const removeLocation = (address) => {
           initialLocation={null}
           fetchDefaultLocation={() => {}}
           saveDefaultLocation={() => {}}
+          showHeader={false}
+          showButtons={false}
         />
 
         </div>
