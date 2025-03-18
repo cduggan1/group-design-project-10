@@ -1,35 +1,50 @@
 .compare-weather-container {
     margin: 20px auto;
-    width: 90%; /* Adjust to your liking */
-  }
-  
-  .compare-weather-table {
+    width: 90%;
+    /* Adjust to your liking */
+}
+
+.compare-weather-table {
     border-collapse: collapse;
     width: 100%;
     text-align: left;
     font-family: Arial, sans-serif;
-  }
-  
-  .compare-weather-table th {
+}
+
+.compare-weather-table th {
     background-color: #f2f2f2;
     color: #333;
     padding: 12px 8px;
     border-bottom: 2px solid #ddd;
-  }
-  
-  .compare-weather-table td {
+}
+
+.compare-weather-table td {
     padding: 10px 8px;
     border-bottom: 1px solid #ddd;
-  }
-  
-  /* Striped row effect */
-  .compare-weather-table tr:nth-child(even) {
+}
+
+/* Striped row effect */
+.compare-weather-table tr:nth-child(even) {
     background-color: #fafafa;
-  }
-  
-  /* Hover effect */
-  .compare-weather-table tbody tr:hover {
+}
+
+/* Hover effect */
+.compare-weather-table tbody tr:hover {
     background-color: #f1f1f1;
     cursor: default;
-  }
-  
+}
+
+.compare-weather-header {
+    display: flex;
+    /* enables flexbox */
+    align-items: center;
+    /* vertically centers items in the row */
+    justify-content: space-between;
+    /* pushes heading to left, search to right */
+    margin-bottom: 20px;
+}
+
+.compare-weather-search input {
+    margin-right: 8px;
+    /* small spacing between input and button */
+}
