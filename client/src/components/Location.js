@@ -350,25 +350,30 @@ const Location = ({
             GPS Coordinates
           </label>
         </div>
-        
-        <div style={{ position: "relative" }}>
-          <input
-            type="text"
-            placeholder="Enter your city or address"
-            value={query_address}
-            onChange={handleInputChange}
-            onBlur={handleBlur}
-            onFocus={handleFocus}
-            style={{ 
-              width: "100%", 
-              padding: "10px", 
-              fontSize: "16px",
-              borderRadius: "4px",
-              border: "1px solid #ccc"
-            }}
-          />
 
-          {}
+        {/* If city or landmark, show existing suggestions input */}
+        {(locationType === "city" || locationType === "landmark") && (
+          <div style={{ position: "relative" }}>
+            <input
+              type="text"
+              placeholder="Enter your city or address"
+              value={query_address}
+              onChange={handleInputChange}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onFocus={() => {
+                if (query_address.length >= 2 && suggestions.length > 0) {
+                  setShowSuggestions(true);
+                }
+              }}
+              style={{
+                width: "100%",
+                padding: "10px",
+                fontSize: "16px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+          
           {isLoading && (
             <div
               style={{
