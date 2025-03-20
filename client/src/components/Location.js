@@ -72,7 +72,7 @@ const Location = ({
       }
     );
   };
-  
+
   // GPS: Manually typed lat/lon
 
   const handleManualGpsSubmit = () => {
@@ -153,17 +153,17 @@ const Location = ({
   const calculateSimilarity = (str1, str2) => {
     const s1 = str1.toLowerCase();
     const s2 = str2.toLowerCase();
-    
+
     const matrix = Array(s1.length + 1).fill().map(() => Array(s2.length + 1).fill(0));
-    
+
     for (let i = 0; i <= s1.length; i++) {
       matrix[i][0] = i;
     }
-    
+
     for (let j = 0; j <= s2.length; j++) {
       matrix[0][j] = j;
     }
-    
+
     for (let i = 1; i <= s1.length; i++) {
       for (let j = 1; j <= s2.length; j++) {
         const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
@@ -175,7 +175,7 @@ const Location = ({
       }
     }
 
-    
+
     const maxLength = Math.max(s1.length, s2.length);
     return maxLength === 0 ? 1 : 1 - matrix[s1.length][s2.length] / maxLength;
   };
@@ -186,24 +186,24 @@ const Location = ({
       setShowSuggestions(false);
       return;
     }
-    
+
     if (suggestionsCache.current[query]) {
       setSuggestions(suggestionsCache.current[query]);
       setShowSuggestions(true);
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     try {
       const commonCities = [
-        "Dublin", "Cork", "Galway", "Limerick", "Waterford", 
+        "Dublin", "Cork", "Galway", "Limerick", "Waterford",
         "Drogheda", "Kilkenny", "Wexford", "Sligo", "Athlone"
       ];
-      
+
       let clientSideSuggestions = [];
       const queryLower = query.toLowerCase();
-      
+
       commonCities.forEach(city => {
         const similarity = calculateSimilarity(queryLower, city.toLowerCase());
         if (similarity > 0.65) {
@@ -215,7 +215,7 @@ const Location = ({
           });
         }
       });
-      
+
       const response = await fetch(`${BASE_URL}/api/location-suggestions/?query=${encodeURIComponent(query)}`);
       if (!response.ok) {
         throw new Error("Failed to fetch suggestions");
@@ -291,7 +291,7 @@ const Location = ({
         address: suggestion.value || suggestion.label
       });
       updateLocation(suggestion.latitude, suggestion.longitude, suggestion.value || suggestion.label);
-    }    
+    }
   };
 
   const handleBlur = () => {
@@ -316,12 +316,11 @@ const Location = ({
         padding: "20px",
       }}
     >
-      {}
       <div style={{ flex: 1, textAlign: "center" }}>
         {showHeader && <h2>Set Location</h2>}
-         
-         {/* Radio Buttons for City, Landmark, or GPS */}
-         <div style={{ marginBottom: "15px" }}>
+  
+        {/* Radio Buttons for City, Landmark, or GPS */}
+        <div style={{ marginBottom: "15px" }}>
           <label style={{ marginRight: "10px" }}>
             <input
               type="radio"
@@ -350,7 +349,7 @@ const Location = ({
             GPS Coordinates
           </label>
         </div>
-
+  
         {/* If city or landmark, show existing suggestions input */}
         {(locationType === "city" || locationType === "landmark") && (
           <div style={{ position: "relative" }}>
@@ -359,12 +358,8 @@ const Location = ({
               placeholder="Enter your city or address"
               value={query_address}
               onChange={handleInputChange}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              onFocus={() => {
-                if (query_address.length >= 2 && suggestions.length > 0) {
-                  setShowSuggestions(true);
-                }
-              }}
+              onBlur={handleBlur}
+              onFocus={handleFocus}
               style={{
                 width: "100%",
                 padding: "10px",
@@ -373,95 +368,126 @@ const Location = ({
                 border: "1px solid #ccc",
               }}
             />
-          
-          {isLoading && (
-            <div
-              style={{
-                position: "absolute",
-                right: "10px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "#666",
-              }}
-            >
-              Loading...
-            </div>
-          )}
-
-          {}
-          {showSuggestions && suggestions.length > 0 && (
-            <div
-              style={{
-                position: "absolute",
-                width: "100%",
-                maxHeight: "200px",
-                overflowY: "auto",
-                backgroundColor: "white",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                zIndex: 10,
-                boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
-              }}
-            >
-              {suggestions.map((suggestion, index) => (
-                <div
-                  key={index}
-                  style={{
-                    padding: "8px 12px",
-                    cursor: "pointer",
-                    borderBottom: index < suggestions.length - 1 ? "1px solid #eee" : "none",
-                    textAlign: "left",
-                    backgroundColor: suggestion.isLocalMatch ? "#f0fff0" : (index % 2 === 0 ? "#f9f9f9" : "white")
-                  }}
-                  onMouseDown={() => handleSelectSuggestion(suggestion)}
-                  onTouchStart={() => handleSelectSuggestion(suggestion)}
-                >
-                  {suggestion.label}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        {/* Only show the green buttons if showButtons === true */}
-        {showButtons && (
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: "1fr 1fr", 
-          gap: "15px", 
-          marginTop: "15px",
-          justifyContent: "center" // Centers the buttons in the grid
-        }}>
-          <button onClick={fetchCoordinates} style={buttonStyle}>Get Coordinates</button>
-          <button onClick={fetchGpsLocation} style={buttonStyle}>Use GPS Location</button>
-          <button onClick={saveDefaultLocation} style={buttonStyle}>Save as Default</button>
-          <button onClick={fetchDefaultLocation} style={buttonStyle}>Fetch Default Location</button>
-        </div>
-        )}
-
-        {location ? (
-          <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f0f8ff", borderRadius: "4px" }}>
-            <p><strong>Current location:</strong> {location.address}<br />
-            <span style={{ color: "#666" }}>Coordinates: {location.latitude}, {location.longitude}</span></p>
+  
+            {isLoading && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#666",
+                }}
+              >
+                Loading...
+              </div>
+            )}
+  
+            {showSuggestions && suggestions.length > 0 && (
+              <div
+                style={{
+                  position: "absolute",
+                  width: "100%",
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                  backgroundColor: "white",
+                  border: "1px solid #ddd",
+                  borderRadius: "4px",
+                  zIndex: 10,
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
+                }}
+              >
+                {suggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      padding: "8px 12px",
+                      cursor: "pointer",
+                      borderBottom:
+                        index < suggestions.length - 1
+                          ? "1px solid #eee"
+                          : "none",
+                      textAlign: "left",
+                      backgroundColor: suggestion.isLocalMatch
+                        ? "#f0fff0"
+                        : index % 2 === 0
+                        ? "#f9f9f9"
+                        : "white",
+                    }}
+                    onMouseDown={() => handleSelectSuggestion(suggestion)}
+                    onTouchStart={() => handleSelectSuggestion(suggestion)}
+                  >
+                    {suggestion.label}
+                  </div>
+                ))}
+              </div>
+            )}
+  
+            {/* Only show the green buttons if showButtons === true */}
+            {showButtons && (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "15px",
+                  marginTop: "15px",
+                  justifyContent: "center",
+                }}
+              >
+                <button onClick={fetchCoordinates} style={buttonStyle}>
+                  Get Coordinates
+                </button>
+                <button onClick={fetchGpsLocation} style={buttonStyle}>
+                  Use GPS Location
+                </button>
+                <button onClick={saveDefaultLocation} style={buttonStyle}>
+                  Save as Default
+                </button>
+                <button onClick={fetchDefaultLocation} style={buttonStyle}>
+                  Fetch Default Location
+                </button>
+              </div>
+            )}
+  
+            {location ? (
+              <div
+                style={{
+                  marginTop: "20px",
+                  padding: "15px",
+                  backgroundColor: "#f0f8ff",
+                  borderRadius: "4px",
+                }}
+              >
+                <p>
+                  <strong>Current location:</strong> {location.address}
+                  <br />
+                  <span style={{ color: "#666" }}>
+                    Coordinates: {location.latitude}, {location.longitude}
+                  </span>
+                </p>
+              </div>
+            ) : (
+              <p>No location set</p>
+            )}
           </div>
-        ) : (
-          <p>No location set</p>
+        )}
+  
+        {/* If there's an error */}
+        {error && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: "20px",
+              left: "20px",
+              color: "red",
+            }}
+          >
+            <p>{error}</p>
+          </div>
         )}
       </div>
-
-      {error && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "20px",
-            left: "20px",
-            color: "red",
-          }}
-        >
-          <p>{error}</p>
-        </div>
-      )}
     </div>
   );
+  
 };
-
 export default Location;
