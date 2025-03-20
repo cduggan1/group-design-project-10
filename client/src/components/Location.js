@@ -9,12 +9,19 @@ const Location = ({
   showButtons = true,
 }) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
+  const [locationType, setLocationType] = useState("city"); // "city", "landmark", or "gps"
+
+  // For the suggestions logic (City/Landmark)
   const [query_address, setQueryAddress] = useState("");
   const [location, setLocation] = useState(initialLocation || null);
   const [error, setError] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // For manual GPS inputs
+  const [typedLatitude, setTypedLatitude] = useState("");
+  const [typedLongitude, setTypedLongitude] = useState("");
 
   const suggestionsCache = useRef({});
   const debounceTimerRef = useRef(null);
