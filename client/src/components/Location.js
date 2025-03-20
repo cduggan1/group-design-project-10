@@ -319,6 +319,38 @@ const Location = ({
       {}
       <div style={{ flex: 1, textAlign: "center" }}>
         {showHeader && <h2>Set Location</h2>}
+         
+         {/* Radio Buttons for City, Landmark, or GPS */}
+         <div style={{ marginBottom: "15px" }}>
+          <label style={{ marginRight: "10px" }}>
+            <input
+              type="radio"
+              value="city"
+              checked={locationType === "city"}
+              onChange={handleLocationTypeChange}
+            />
+            City
+          </label>
+          <label style={{ marginRight: "10px" }}>
+            <input
+              type="radio"
+              value="landmark"
+              checked={locationType === "landmark"}
+              onChange={handleLocationTypeChange}
+            />
+            Landmark
+          </label>
+          <label>
+            <input
+              type="radio"
+              value="gps"
+              checked={locationType === "gps"}
+              onChange={handleLocationTypeChange}
+            />
+            GPS Coordinates
+          </label>
+        </div>
+        
         <div style={{ position: "relative" }}>
           <input
             type="text"
