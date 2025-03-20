@@ -40,6 +40,18 @@ const Location = ({
     };
   }, []);
 
+  // Radio button logic: Switch between city/landmark vs. GPS inputs
+
+  const handleLocationTypeChange = (e) => {
+    setLocationType(e.target.value);
+    // Clear out suggestions and any typed GPS if switching modes
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setQueryAddress("");
+    setTypedLatitude("");
+    setTypedLongitude("");
+  };
+  
   const fetchGpsLocation = async () => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser");
