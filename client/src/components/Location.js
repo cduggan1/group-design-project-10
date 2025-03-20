@@ -397,6 +397,49 @@ const Location = ({
                   boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
                 }}
               >
+                {locationType === "gps" && (
+                  <div style={{ marginTop: "15px" }}>
+                    <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+                      <input
+                        type="number"
+                        placeholder="Latitude"
+                        value={typedLatitude}
+                        onChange={(e) => setTypedLatitude(e.target.value)}
+                        style={{
+                          width: "45%",
+                          padding: "10px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Longitude"
+                        value={typedLongitude}
+                        onChange={(e) => setTypedLongitude(e.target.value)}
+                        style={{
+                          width: "45%",
+                          padding: "10px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                    </div>
+                    <button
+                      onClick={handleManualGpsSubmit}
+                      style={{
+                        padding: "8px 16px",
+                        backgroundColor: "#4CAF50",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Set GPS
+                    </button>
+                  </div>
+                )}
                 {suggestions.map((suggestion, index) => (
                   <div
                     key={index}
