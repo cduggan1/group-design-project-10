@@ -318,7 +318,7 @@ const Location = ({
     >
       <div style={{ flex: 1, textAlign: "center" }}>
         {showHeader && <h2>Set Location</h2>}
-  
+
         {/* Radio Buttons for City, Landmark, or GPS */}
         <div style={{ marginBottom: "15px" }}>
           <label style={{ marginRight: "10px" }}>
@@ -349,7 +349,7 @@ const Location = ({
             GPS Coordinates
           </label>
         </div>
-  
+        
         {/* If city or landmark, show existing suggestions input */}
         {(locationType === "city" || locationType === "landmark") && (
           <div style={{ position: "relative" }}>
@@ -368,7 +368,7 @@ const Location = ({
                 border: "1px solid #ccc",
               }}
             />
-  
+
             {isLoading && (
               <div
                 style={{
@@ -382,7 +382,7 @@ const Location = ({
                 Loading...
               </div>
             )}
-  
+
             {showSuggestions && suggestions.length > 0 && (
               <div
                 style={{
@@ -397,49 +397,6 @@ const Location = ({
                   boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
                 }}
               >
-                {locationType === "gps" && (
-                  <div style={{ marginTop: "15px" }}>
-                    <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-                      <input
-                        type="number"
-                        placeholder="Latitude"
-                        value={typedLatitude}
-                        onChange={(e) => setTypedLatitude(e.target.value)}
-                        style={{
-                          width: "45%",
-                          padding: "10px",
-                          borderRadius: "4px",
-                          border: "1px solid #ccc",
-                        }}
-                      />
-                      <input
-                        type="number"
-                        placeholder="Longitude"
-                        value={typedLongitude}
-                        onChange={(e) => setTypedLongitude(e.target.value)}
-                        style={{
-                          width: "45%",
-                          padding: "10px",
-                          borderRadius: "4px",
-                          border: "1px solid #ccc",
-                        }}
-                      />
-                    </div>
-                    <button
-                      onClick={handleManualGpsSubmit}
-                      style={{
-                        padding: "8px 16px",
-                        backgroundColor: "#4CAF50",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Set GPS
-                    </button>
-                  </div>
-                )}
                 {suggestions.map((suggestion, index) => (
                   <div
                     key={index}
@@ -465,72 +422,112 @@ const Location = ({
                 ))}
               </div>
             )}
-  
-            {/* Only show the green buttons if showButtons === true */}
-            {showButtons && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "15px",
-                  marginTop: "15px",
-                  justifyContent: "center",
-                }}
-              >
-                <button onClick={fetchCoordinates} style={buttonStyle}>
-                  Get Coordinates
-                </button>
-                <button onClick={fetchGpsLocation} style={buttonStyle}>
-                  Use GPS Location
-                </button>
-                <button onClick={saveDefaultLocation} style={buttonStyle}>
-                  Save as Default
-                </button>
-                <button onClick={fetchDefaultLocation} style={buttonStyle}>
-                  Fetch Default Location
-                </button>
-              </div>
-            )}
-  
-            {location ? (
-              <div
-                style={{
-                  marginTop: "20px",
-                  padding: "15px",
-                  backgroundColor: "#f0f8ff",
-                  borderRadius: "4px",
-                }}
-              >
-                <p>
-                  <strong>Current location:</strong> {location.address}
-                  <br />
-                  <span style={{ color: "#666" }}>
-                    Coordinates: {location.latitude}, {location.longitude}
-                  </span>
-                </p>
-              </div>
-            ) : (
-              <p>No location set</p>
-            )}
           </div>
         )}
-  
-        {/* If there's an error */}
-        {error && (
-          <div
+      {locationType === "gps" && (
+        <div style={{ marginTop: "15px" }}>
+          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+            <input
+              type="number"
+              placeholder="Latitude"
+              value={typedLatitude}
+              onChange={(e) => setTypedLatitude(e.target.value)}
+              style={{
+                width: "45%",
+                padding: "10px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+            <input
+              type="number"
+              placeholder="Longitude"
+              value={typedLongitude}
+              onChange={(e) => setTypedLongitude(e.target.value)}
+              style={{
+                width: "45%",
+                padding: "10px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+          <button
+            onClick={handleManualGpsSubmit}
             style={{
-              position: "absolute",
-              bottom: "20px",
-              left: "20px",
-              color: "red",
+              padding: "8px 16px",
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
             }}
           >
-            <p>{error}</p>
+            Set GPS
+          </button>
+        </div>
+      )}
+        {showButtons && (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "15px",
+              marginTop: "15px",
+              justifyContent: "center",
+            }}
+          >
+            <button onClick={fetchCoordinates} style={buttonStyle}>
+              Get Coordinates
+            </button>
+            <button onClick={fetchGpsLocation} style={buttonStyle}>
+              Use GPS Location
+            </button>
+            <button onClick={saveDefaultLocation} style={buttonStyle}>
+              Save as Default
+            </button>
+            <button onClick={fetchDefaultLocation} style={buttonStyle}>
+              Fetch Default Location
+            </button>
           </div>
         )}
+
+        {location ? (
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "15px",
+              backgroundColor: "#f0f8ff",
+              borderRadius: "4px",
+            }}
+          >
+            <p>
+              <strong>Current location:</strong> {location.address}
+              <br />
+              <span style={{ color: "#666" }}>
+                Coordinates: {location.latitude}, {location.longitude}
+              </span>
+            </p>
+          </div>
+        ) : (
+          <p>No location set</p>
+        )}
       </div>
+
+      {error && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "20px",
+            left: "20px",
+            color: "red",
+          }}
+        >
+          <p>{error}</p>
+        </div>
+      )}
     </div>
   );
-  
 };
+
 export default Location;
