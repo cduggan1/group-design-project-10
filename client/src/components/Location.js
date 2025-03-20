@@ -51,7 +51,7 @@ const Location = ({
     setTypedLatitude("");
     setTypedLongitude("");
   };
-  
+
   const fetchGpsLocation = async () => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser");
@@ -73,6 +73,20 @@ const Location = ({
     );
   };
   
+  // GPS: Manually typed lat/lon
+
+  const handleManualGpsSubmit = () => {
+    const latNum = parseFloat(typedLatitude);
+    const lonNum = parseFloat(typedLongitude);
+    if (isNaN(latNum) || isNaN(lonNum)) {
+      setError("Please enter valid numeric latitude and longitude.");
+      return;
+    }
+    setLocation({ latitude: latNum, longitude: lonNum, address: "Manual GPS" });
+    updateLocation(latNum, lonNum, "Manual GPS");
+    setError("");
+  };
+
 
   const getGeocodedAddress = async (lat, lon) => {
     try {
