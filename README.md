@@ -29,7 +29,7 @@ First time or anytime Dockerfiles and docker-compose.yml change:
 ### Run
 Every other time do:
 
-`docker-compose up`
+`docker-compose --profile dev up`
 
 And to close the containers:
 
