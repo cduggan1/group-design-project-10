@@ -23,7 +23,7 @@ class Trail(models.Model):
     dogs_allowed = models.CharField(max_length=256, null=True, blank=True)
     management_organisation = models.CharField(max_length=1000, null=True, blank=True)
     location = models.PointField(geography=True, null=True, blank=True)
-    route = models.LineStringField(geography=True)
+    route = gis_models.MultiLineStringField(null=True, blank=True, srid=4326)
 
     def __str__(self):
         return self.name or f"Trail {self.object_id}"
