@@ -59,3 +59,33 @@ class WeatherAlert(models.Model):
     end_time = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
+
+class UserWeatherAlert(models.Model):
+    CONDITION_CHOICES = [
+        ('SUNNY', 'Sunny (Low cloudiness)'),
+        ('RAINY', 'Rainy (Precipitation)'),
+        ('WINDY', 'Windy (High wind speed)'),
+        ('HOT', 'Hot temperature'),
+        ('COLD', 'Cold temperature')
+    ]
+    
+    COMPARISON_CHOICES = [
+        ('GT', 'Greater than'),
+        ('LT', 'Less than'),
+        ('EQ', 'Equal to')
+    ]
+    
+    name = models.CharField(max_length=100)
+    condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
+    threshold = models.FloatField(help_text="Threshold value for the condition")
+    comparison = models.CharField(max_length=2, choices=COMPARISON_CHOICES, default='GT')
+    active = models.BooleanField(default=True)
+    location = models.PointField(geography=True, null=True, blank=True)
+    
+    def __str__(self):
+        comparison_display = {
+            'GT': 'greater than',
+            'LT': 'less than',
+            'EQ': 'equal to'
+        }
+        return f"{self.name}: Alert when {self.get_condition_display()} is {comparison_display[self.comparison]} {self.threshold}"

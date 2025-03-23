@@ -9,6 +9,7 @@ import "leaflet/dist/leaflet.css";
 import React, { useState, useEffect } from "react";
 import L from "leaflet"; // Import the Leaflet library
 import WeatherAlerts from "./WeatherAlerts";
+import UserWeatherAlerts from './UserWeatherAlerts';
 import "./Weather.css";
 
 // Fix for default icon not displaying in React-Leaflet
@@ -211,6 +212,11 @@ const Weather = ({
       {/* Weather Alerts Section - Now at the top */}
       <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
         <WeatherAlerts latitude={latitude} longitude={longitude} />
+      </div>
+      
+      {/* Add User Weather Alerts below official alerts */}
+      <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
+        <UserWeatherAlerts weatherData={weatherData} latitude={latitude} longitude={longitude} />
       </div>
 
       <div
