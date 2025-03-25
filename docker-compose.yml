@@ -12,6 +12,10 @@ services:
       - ./weather:/app/weather
       - ./manage.py:/app/manage.py
       - ./api:/app/api
+      - ./entrypoint.dev.sh:/app/entrypoint.dev.sh
+    env_file:
+      - .env
+    entrypoint: /app/entrypoint.dev.sh
     restart: always
 
   frontend:
@@ -27,6 +31,20 @@ services:
     depends_on:
       - backend
     restart: always
+
+  postgis:
+    image: postgis/postgis:13-3.1
+    container_name: postgis_db
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=local_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    profiles:
+      - dev
 
 volumes:
   pg_data:
