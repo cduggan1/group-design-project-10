@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Trail, TrailSegment, WeatherAlert
+from .models import Trail, TrailSegment, WeatherAlert, UserWeatherAlert
 from .forms import TrailSegmentInlineForm
 from leaflet.admin import LeafletGeoAdmin
 
@@ -16,4 +16,5 @@ class TrailAdmin(LeafletGeoAdmin):
 
 admin.site.register(Trail, TrailAdmin)
 admin.site.register(WeatherAlert)
+admin.site.register(UserWeatherAlert)
 admin.site.register(TrailSegment, LeafletGeoAdmin)
