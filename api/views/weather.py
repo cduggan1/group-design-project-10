@@ -10,6 +10,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.contrib.gis.geos import Point
 from ..models import WeatherAlert
+from ..utils.api_cache import APICache
 
 
 @csrf_exempt
@@ -22,13 +23,15 @@ def get_weather(request):
             return JsonResponse({"error": "Latitude and longitude required"}, status=400)
 
         api_url = f"http://openaccess.pf.api.met.ie/metno-wdb2ts/locationforecast?lat={lat};long={lon}"
-        response = requests.get(api_url)
 
-        if response.status_code != 200:
-            return JsonResponse({"error": "Failed to fetch weather data"}, status=response.status_code)
-
-        xml_data = response.text
-        root = ET.fromstring(xml_data)
+        cached_data = APICache.get_cached_response(api_url, timeout=900)
+    
+        if not cached_data:
+            return JsonResponse({"error": "Failed to fetch weather data"}, status=500)
+        try:
+            root = ET.fromstring(cached_data)
+        except ET.ParseError:
+            return JsonResponse({"error": "Failed to parse weather data"}, status=500)
 
         values = []
         time_elements = root.findall(".//time")
@@ -76,21 +79,19 @@ def get_solar(request):
         if not lat or not lon:
             return JsonResponse({"error": "Latitude and longitude required"}, status=400)
 
-        api_url = f"https://api.sunrise-sunset.org/json?lat={lon}&lng={lon}"
-        response = requests.get(api_url)
+        api_url = f"https://api.sunrise-sunset.org/json?lat={lat}&lng={lon}"
 
-        if response.status_code != 200:
-            return JsonResponse({"error": "Failed to fetch solar data"}, status=response.status_code)
-
+        cached_data = APICache.get_cached_response(api_url, timeout=43200)
         
-        data = response.text
-        data = json.loads(response.text)
+        if not cached_data:
+            return JsonResponse({"error": "Failed to fetch solar data"}, status=500)
 
-        values = []
-        sunrise_time = data["results"]["sunrise"]
-        sunset_time = data["results"]["sunset"]
-        values.append({"rise": sunrise_time, "set": sunset_time})
-        return JsonResponse(values, safe=False)
+        try:
+            sunrise_time = cached_data["results"]["sunrise"]
+            sunset_time = cached_data["results"]["sunset"]
+            return JsonResponse([{"rise": sunrise_time, "set": sunset_time}], safe=False)
+        except (KeyError, TypeError):
+            return JsonResponse({"error": "Failed to parse solar data"}, status=500)
 
 @csrf_exempt
 def get_weather_alerts(request):

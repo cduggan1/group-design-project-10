@@ -8,6 +8,8 @@ from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D
 from django.views.decorators.csrf import csrf_exempt
 from ..models import Trail
+from ..utils.api_cache import APICache
+
 
 def parse_parameters(request):
     """
@@ -36,11 +38,11 @@ def fetch_weather_at(lat, lon, target_dt):
     Uses an external weather API and returns the forecast (or None if unavailable).
     """
     api_url = f"http://openaccess.pf.api.met.ie/metno-wdb2ts/locationforecast?lat={lat};long={lon}"
-    response = requests.get(api_url)
-    if response.status_code != 200:
+    cached_data = APICache.get_cached_response(api_url, timeout=900)
+    if not cached_data:
         return None
     try:
-        root = ET.fromstring(response.text)
+        root = ET.fromstring(cached_data)
     except Exception:
         return None
 
