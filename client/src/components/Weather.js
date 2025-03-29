@@ -219,12 +219,20 @@ const Weather = ({
       </div>
 
       {/* Add User Weather Alerts below official alerts */}
-      <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
-        <UserWeatherAlerts weatherData={weatherData} latitude={latitude} longitude={longitude} />
-      </div>
+      <div style ={{
+        width: "100%", 
+        display: "flex", 
+        justifyContent: "center", 
+        marginBottom: "20px",
+        gap: "20px"
+        }}>
+        <div style={{ width: "fit-content", textAlign: "center"}}>
+            <UserWeatherAlerts weatherData={weatherData} latitude={latitude} longitude={longitude} />
+        </div>
 
-      <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
-        <TrailWeatherPreferences onChange={setPreferences} />
+        <div style={{ width: "fit-content", textAlign: "left"}}>
+          <TrailWeatherPreferences onChange={setPreferences} />
+        </div>
       </div>
       <div
         style={{
@@ -405,7 +413,7 @@ const Weather = ({
                     const excluded = !!reason;
 
                     return (
-                      <details key={index} style={{ marginBottom: "10px", opacity: excluded ? 0.4 : 1 }}>
+                      <details key={index} style={{ marginBottom: "10px" }}>
                         <summary>
                           {trail.properties.name}
                           {excluded && <span style={{ color: "red", marginLeft: "10px" }}>— {reason}</span>}
@@ -436,7 +444,10 @@ const Weather = ({
                                 <div key={segmentIndex + 1}>
                                   <table
                                     align="center"
-                                    style={{ width: "100%", borderCollapse: "collapse" }}
+                                    style={{ 
+                                      width: "100%", 
+                                      borderCollapse: "collapse" 
+                                    }}
                                   >
                                     <tbody>
                                       <tr>
@@ -473,7 +484,7 @@ const Weather = ({
                     const excluded = !!reason;
 
                     return (
-                      <details key={index} style={{ marginBottom: "10px", opacity: excluded ? 0.4 : 1 }}>
+                      <details key={index} style={{ marginBottom: "10px" }}>
                         <summary>
                           {trail.properties.name}
                           {excluded && <span style={{ color: "red", marginLeft: "10px" }}>— {reason}</span>}
