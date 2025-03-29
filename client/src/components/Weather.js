@@ -317,13 +317,13 @@ const Weather = ({
                 />
               </label>
             </div>
-            <button
+              <button className="btn-add-alert"
               onClick={() => {
                 fetchSolar();
                 fetchWeather();
               }}
             >
-              Get Weather at your location
+              Get Weather at Your Location
             </button>
             <button
               onClick={() => {
