@@ -242,11 +242,17 @@ const Weather = ({
           gap: "30px",
         }}
       >
+        {/* LEFT SIDE */}
+
         {/* Weather Section - Displays weather forecast for selected coordinates */}
         <div style={{ flex: 1, textAlign: "center" }}>
           <h2>Weather Forecast</h2>
           {/* Map Section */}
-          <div style={{ height: "300px", width: "100%", marginBottom: "10px" }}>
+          <div style={{ 
+            height: "300px", 
+            width: "100%", 
+            marginBottom: "10px" }}>
+
             <MapContainer
               center={[53.49, -7.562]}
               zoom={7}
@@ -291,6 +297,7 @@ const Weather = ({
                   );
                 })}
             </MapContainer>
+
           </div>
 
           <div>
@@ -317,7 +324,11 @@ const Weather = ({
                 />
               </label>
             </div>
-            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+
+            <div style={{ 
+              display: "flex",
+              gap: "12px", 
+              justifyContent: "center" }}>
 
               <button className="btn-add-alert"
               onClick={() => {
@@ -405,6 +416,8 @@ const Weather = ({
                 </div>
               )}
 
+            {/* RIGHT SIDE - TABLE */}
+
             {/* Right Side - Trail Weather */}
             {topCycleTrails && trailWeather && (
               <div style={{ flex: 1 }}>
@@ -419,7 +432,10 @@ const Weather = ({
                       <details key={index} style={{ marginBottom: "10px" }}>
                         <summary>
                           {trail.properties.name}
-                          {excluded && <span style={{ color: "red", marginLeft: "10px" }}>— {reason}</span>}
+                          {excluded && <span style={{ 
+                            color: "red", 
+                            marginLeft: "10px" 
+                            }}>— {reason}</span>}
                         </summary>
                         <button className="btn-add-alert"
                           onClick={() =>
@@ -432,7 +448,12 @@ const Weather = ({
                         </button>
                         <div style={{ paddingLeft: "20px" }}>
                           If starting the trail in an hour:
-                          <div style={{ listStyleType: "none", paddingLeft: "0" }}>
+                          
+                          <div style={{ 
+                            listStyleType: "none", 
+                            paddingLeft: "0" 
+                            }}>
+
                             {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
                               const isoString = segment.weather.forecast_time;
                               const date = new Date(isoString);
