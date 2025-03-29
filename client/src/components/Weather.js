@@ -476,91 +476,78 @@ const Weather = ({
                   </div>
                 </div>
               )}
-
-              {topWalkingTrails && trailWeather && (
-                <div style={{ flex: 1 }}>
-                  <div>
-                    <h2>Trail Weather</h2>
-                    {topWalkingTrails.features.map((trail, index) => (
-                      <details key={index} style={{ marginBottom: "10px" }}>
-                        <summary>{trail.properties.name}</summary>
-                        <button
-                          onClick={() =>
-                            updateDestination(
-                              `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
-                            )
-                          }
-                        >
-                          Set as destination
-                        </button>
-                        <div style={{ paddingLeft: "20px" }}>
-                          If starting the trail in an hour:
-                          <div
-                            style={{ listStyleType: "none", paddingLeft: "0" }}
-                          >
-                            {trailWeather.features[
-                              index
-                            ].properties.segments.map(
-                              (segment, segmentIndex) => {
-                                const isoString = segment.weather.forecast_time;
-                                const date = new Date(isoString);
-                                const timeString = date.toLocaleTimeString(
-                                  "en-US",
-                                  {
-                                    hour: "numeric",
-                                    minute: "numeric",
-                                    hour12: true,
-                                  }
-                                );
-                                const formattedTime = timeString.replace(
-                                  ":00",
-                                  ""
-                                );
-
-                                return (
-                                  <div key={segmentIndex + 1}>
-                                    <table
-                                      align="center"
-                                      style={{
-                                        width: "100%",
-                                        borderCollapse: "collapse",
-                                      }}
-                                    >
-                                      <tbody>
-                                        <tr>
-                                          <th>{formattedTime}:</th>
-                                          <th>
-                                            {segment.weather.rain}mm
-                                            precipitation
-                                          </th>
-                                          <th>
-                                            {segment.weather.temperature}°C
-                                          </th>
-                                          <th>
-                                            {segment.weather.cloudiness}% cloud
-                                            cover
-                                          </th>
-                                          <th>
-                                            {segment.weather.wind_speed}km/h{" "}
-                                            {segment.weather.wind_direction}
-                                          </th>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                );
-                              }
-                            )}
-                          </div>
-                        </div>
-                      </details>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
-        </div>
+
+
+        {topWalkingTrails && trailWeather && (
+          <div style={{ flex: 1 }}>
+            <div>
+              <h2>Walking Trail Weather</h2>
+              {topWalkingTrails.features.map((trail, index) => {
+                const segment = trailWeather.features[index]?.properties?.segments[0];
+                const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
+                const excluded = !!reason;
+
+                return (
+                  <details key={index} style={{ marginBottom: "10px", opacity: excluded ? 0.4 : 1 }}>
+                    <summary>
+                      {trail.properties.name}
+                      {excluded && <span style={{ color: "red", marginLeft: "10px" }}>— {reason}</span>}
+                    </summary>
+                    <button
+                      onClick={() =>
+                        updateDestination(
+                          `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+                        )
+                      }
+                    >
+                      Set as destination
+                    </button>
+                    <div style={{ paddingLeft: "20px" }}>
+                      If starting the trail in an hour:
+                      <div style={{ listStyleType: "none", paddingLeft: "0" }}>
+                        {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
+                          const isoString = segment.weather.forecast_time;
+                          const date = new Date(isoString);
+                          const timeString = date.toLocaleTimeString("en-US", {
+                            hour: "numeric",
+                            minute: "numeric",
+                            hour12: true,
+                          });
+                          const formattedTime = timeString.replace(":00", "");
+
+                          return (
+                            <div key={segmentIndex + 1}>
+                              <table
+                                align="center"
+                                style={{ width: "100%", borderCollapse: "collapse" }}
+                              >
+                                <tbody>
+                                  <tr>
+                                    <th>{formattedTime}:</th>
+                                    <th>{segment.weather.rain}mm precipitation</th>
+                                    <th>{segment.weather.temperature}°C</th>
+                                    <th>{segment.weather.cloudiness}% cloud cover</th>
+                                    <th>
+                                      {segment.weather.wind_speed}km/h{" "}
+                                      {segment.weather.wind_direction}
+                                    </th>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </details>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
 
         {/* Table Section - Displays weather data in a table beside the map */}
         <div style={{ flex: 1, textAlign: "center" }}>
