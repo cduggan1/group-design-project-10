@@ -317,6 +317,8 @@ const Weather = ({
                 />
               </label>
             </div>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+
               <button className="btn-add-alert"
               onClick={() => {
                 fetchSolar();
@@ -343,6 +345,7 @@ const Weather = ({
             >
               {isLoading ? "Loading..." : "Get Walking Trails"}
             </button>
+            </div>
             <div
               style={{
                 display: "flex",
