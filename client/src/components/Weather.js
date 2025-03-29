@@ -203,69 +203,6 @@ const Weather = ({
       <Marker position={[latitude, longitude]} icon={defaultIcon} />
     ) : null;
   }
-  const renderFilteredTrails = (trailSet, title) => {
-    if (!trailSet || !trailWeather || !preferences) return null;
-
-    return (
-      <div style={{ flex: 1 }}>
-        <h2>{title}</h2>
-        {trailSet.features.map((trail, index) => {
-          const segment = trailWeather.features[index]?.properties?.segments[0];
-          if (!segment) return null;
-
-          const reason = getExclusionReason(segment.weather, preferences);
-          const excluded = reason !== null;
-
-          return (
-            <details key={index} style={{ marginBottom: "10px", opacity: excluded ? 0.4 : 1 }}>
-              <summary>
-                {trail.properties.name}
-                {excluded && <span style={{ color: "red", marginLeft: "10px" }}>— {reason}</span>}
-              </summary>
-              <button
-                onClick={() =>
-                  updateDestination(
-                    `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
-                  )
-                }
-              >
-                Set as destination
-              </button>
-              <div style={{ paddingLeft: "20px" }}>
-                If starting the trail in an hour:
-                <div>
-                  {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
-                    const date = new Date(segment.weather.forecast_time);
-                    const formattedTime = date.toLocaleTimeString("en-US", {
-                      hour: "numeric",
-                      minute: "numeric",
-                      hour12: true,
-                    }).replace(":00", "");
-
-                    return (
-                      <div key={segmentIndex + 1}>
-                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                          <tbody>
-                            <tr>
-                              <th>{formattedTime}:</th>
-                              <th>{segment.weather.rain}mm precipitation</th>
-                              <th>{segment.weather.temperature}°C</th>
-                              <th>{segment.weather.cloudiness}% cloud cover</th>
-                              <th>{segment.weather.wind_speed}km/h {segment.weather.wind_direction}</th>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </details>
-          );
-        })}
-      </div>
-    );
-  };
 
   return (
     <div
@@ -289,7 +226,6 @@ const Weather = ({
       <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
         <TrailWeatherPreferences onChange={setPreferences} />
       </div>
-
       <div
         style={{
           display: "flex",
@@ -322,7 +258,8 @@ const Weather = ({
                   ); // Convert to Leaflet format
 
                   return (
-                    <Polyline                     key={index}
+                    <Polyline
+                      key={index}
                       positions={polylineCoords}
                       color="blue"
                       weight={5}
@@ -457,16 +394,173 @@ const Weather = ({
                 </div>
               )}
 
-              {/* Right Side - Cycling Trail Weather */}
-              {renderFilteredTrails(topCycleTrails, "Cycling Trails")}
+              {/* Right Side - Trail Weather */}
+              {topCycleTrails && trailWeather && (
+                <div style={{ flex: 1 }}>
+                  <div>
+                    <h2>Trail Weather</h2>
+                    {topCycleTrails.features.map((trail, index) => (
+                      <details key={index} style={{ marginBottom: "10px" }}>
+                        <summary>{trail.properties.name}</summary>
+                        <button
+                          onClick={() =>
+                            updateDestination(
+                              `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+                            )
+                          }
+                        >
+                          Set as destination
+                        </button>
+                        <div style={{ paddingLeft: "20px" }}>
+                          If starting the trail in an hour:
+                          <div
+                            style={{ listStyleType: "none", paddingLeft: "0" }}
+                          >
+                            {trailWeather.features[
+                              index
+                            ].properties.segments.map(
+                              (segment, segmentIndex) => {
+                                const isoString = segment.weather.forecast_time;
+                                const date = new Date(isoString);
+                                const timeString = date.toLocaleTimeString(
+                                  "en-US",
+                                  {
+                                    hour: "numeric",
+                                    minute: "numeric",
+                                    hour12: true,
+                                  }
+                                );
+                                const formattedTime = timeString.replace(
+                                  ":00",
+                                  ""
+                                );
 
-              {/* Left Side - Walking Trail Weather */}
+                                return (
+                                  <div key={segmentIndex + 1}>
+                                    <table
+                                      align="center"
+                                      style={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                      }}
+                                    >
+                                      <tbody>
+                                        <tr>
+                                          <th>{formattedTime}:</th>
+                                          <th>
+                                            {segment.weather.rain}mm
+                                            precipitation
+                                          </th>
+                                          <th>
+                                            {segment.weather.temperature}°C
+                                          </th>
+                                          <th>
+                                            {segment.weather.cloudiness}% cloud
+                                            cover
+                                          </th>
+                                          <th>
+                                            {segment.weather.wind_speed}km/h{" "}
+                                            {segment.weather.wind_direction}
+                                          </th>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              {renderFilteredTrails(topWalkingTrails, "Walking Trails")}
+              {topWalkingTrails && trailWeather && (
+                <div style={{ flex: 1 }}>
+                  <div>
+                    <h2>Trail Weather</h2>
+                    {topWalkingTrails.features.map((trail, index) => (
+                      <details key={index} style={{ marginBottom: "10px" }}>
+                        <summary>{trail.properties.name}</summary>
+                        <button
+                          onClick={() =>
+                            updateDestination(
+                              `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+                            )
+                          }
+                        >
+                          Set as destination
+                        </button>
+                        <div style={{ paddingLeft: "20px" }}>
+                          If starting the trail in an hour:
+                          <div
+                            style={{ listStyleType: "none", paddingLeft: "0" }}
+                          >
+                            {trailWeather.features[
+                              index
+                            ].properties.segments.map(
+                              (segment, segmentIndex) => {
+                                const isoString = segment.weather.forecast_time;
+                                const date = new Date(isoString);
+                                const timeString = date.toLocaleTimeString(
+                                  "en-US",
+                                  {
+                                    hour: "numeric",
+                                    minute: "numeric",
+                                    hour12: true,
+                                  }
+                                );
+                                const formattedTime = timeString.replace(
+                                  ":00",
+                                  ""
+                                );
+
+                                return (
+                                  <div key={segmentIndex + 1}>
+                                    <table
+                                      align="center"
+                                      style={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                      }}
+                                    >
+                                      <tbody>
+                                        <tr>
+                                          <th>{formattedTime}:</th>
+                                          <th>
+                                            {segment.weather.rain}mm
+                                            precipitation
+                                          </th>
+                                          <th>
+                                            {segment.weather.temperature}°C
+                                          </th>
+                                          <th>
+                                            {segment.weather.cloudiness}% cloud
+                                            cover
+                                          </th>
+                                          <th>
+                                            {segment.weather.wind_speed}km/h{" "}
+                                            {segment.weather.wind_direction}
+                                          </th>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        
 
         {/* Table Section - Displays weather data in a table beside the map */}
         <div style={{ flex: 1, textAlign: "center" }}>
