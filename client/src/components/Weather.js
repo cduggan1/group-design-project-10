@@ -11,7 +11,7 @@ import L from "leaflet"; // Import the Leaflet library
 import WeatherAlerts from "./WeatherAlerts";
 import UserWeatherAlerts from './UserWeatherAlerts';
 import "./Weather.css";
-import TrailWeatherPreferences from "./TrailWeatherPreferences";
+import TrailWeatherPreferences, { getExclusionReason } from "./TrailWeatherPreferences";
 
 
 // Fix for default icon not displaying in React-Leaflet
