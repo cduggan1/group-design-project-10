@@ -384,8 +384,19 @@ const Weather = ({
             >
               {isLoading ? "Loading..." : "Get Walking Trails"}
             </button>
-            {/* Left Side - Weather and Solar Data */}
-            {weatherData && solarData && (
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "30px",
+              }}
+            >
+
+
+              {/* Weather Overview */}
+              {/* Left Side - Weather and Solar Data */}
+              {weatherData && solarData && (
                 <div style={{ flex: 1 }}>
                   <h2>Current Weather</h2>
                   <table
@@ -435,14 +446,7 @@ const Weather = ({
                   </table>
                 </div>
               )}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "30px",
-              }}
-            >
+
             {/* Trail Weather Forecasts */}
 
             {/* Right Side - Trail Weather */}
