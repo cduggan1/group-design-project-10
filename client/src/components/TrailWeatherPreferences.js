@@ -60,3 +60,12 @@ const TrailWeatherPreferences = ({ onChange }) => {
 };
 
 export default TrailWeatherPreferences;
+export const getExclusionReason = (weather, prefs) => {
+    if (!prefs) return null;
+    if (prefs.noRain && weather.rain > 0) return "Too much rain";
+    if (prefs.notWindy && weather.wind_speed > 25) return "Too windy";
+    if (prefs.preferSunny && weather.cloudiness > 40) return "Too cloudy";
+    if (weather.temperature < prefs.minTemp) return "Too cold";
+    if (weather.temperature > prefs.maxTemp) return "Too hot";
+    return null;
+  };

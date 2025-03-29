@@ -11,6 +11,8 @@ import L from "leaflet"; // Import the Leaflet library
 import WeatherAlerts from "./WeatherAlerts";
 import UserWeatherAlerts from './UserWeatherAlerts';
 import "./Weather.css";
+import TrailWeatherPreferences from "./TrailWeatherPreferences";
+
 
 // Fix for default icon not displaying in React-Leaflet
 const defaultIcon = new L.Icon({
@@ -42,6 +44,8 @@ const Weather = ({
   const [topWalkingTrails, setTopWalkingTrails] = useState(null);
   const [maxDistance, setMaxDistance] = useState(50);
   const [isLoading, setIsLoading] = useState(false);
+  const [preferences, setPreferences] = useState(null);
+
 
   useEffect(() => {
     if (initialLat && initialLon) {
@@ -199,6 +203,69 @@ const Weather = ({
       <Marker position={[latitude, longitude]} icon={defaultIcon} />
     ) : null;
   }
+  const renderFilteredTrails = (trailSet, title) => {
+    if (!trailSet || !trailWeather || !preferences) return null;
+
+    return (
+      <div style={{ flex: 1 }}>
+        <h2>{title}</h2>
+        {trailSet.features.map((trail, index) => {
+          const segment = trailWeather.features[index]?.properties?.segments[0];
+          if (!segment) return null;
+
+          const reason = getExclusionReason(segment.weather, preferences);
+          const excluded = reason !== null;
+
+          return (
+            <details key={index} style={{ marginBottom: "10px", opacity: excluded ? 0.4 : 1 }}>
+              <summary>
+                {trail.properties.name}
+                {excluded && <span style={{ color: "red", marginLeft: "10px" }}>— {reason}</span>}
+              </summary>
+              <button
+                onClick={() =>
+                  updateDestination(
+                    `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+                  )
+                }
+              >
+                Set as destination
+              </button>
+              <div style={{ paddingLeft: "20px" }}>
+                If starting the trail in an hour:
+                <div>
+                  {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
+                    const date = new Date(segment.weather.forecast_time);
+                    const formattedTime = date.toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true,
+                    }).replace(":00", "");
+
+                    return (
+                      <div key={segmentIndex + 1}>
+                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                          <tbody>
+                            <tr>
+                              <th>{formattedTime}:</th>
+                              <th>{segment.weather.rain}mm precipitation</th>
+                              <th>{segment.weather.temperature}°C</th>
+                              <th>{segment.weather.cloudiness}% cloud cover</th>
+                              <th>{segment.weather.wind_speed}km/h {segment.weather.wind_direction}</th>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </details>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div
@@ -217,6 +284,10 @@ const Weather = ({
       {/* Add User Weather Alerts below official alerts */}
       <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
         <UserWeatherAlerts weatherData={weatherData} latitude={latitude} longitude={longitude} />
+      </div>
+
+      <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
+        <TrailWeatherPreferences onChange={setPreferences} />
       </div>
 
       <div
@@ -251,8 +322,7 @@ const Weather = ({
                   ); // Convert to Leaflet format
 
                   return (
-                    <Polyline
-                      key={index}
+                    <Polyline                     key={index}
                       positions={polylineCoords}
                       color="blue"
                       weight={5}
