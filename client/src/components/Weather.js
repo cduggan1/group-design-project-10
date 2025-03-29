@@ -325,14 +325,14 @@ const Weather = ({
             >
               Get Weather at Your Location
             </button>
-            <button
+              <button className="btn-add-alert"
               onClick={() => {
                 handleFetchCyclingTrails();
                 fetchTrailWeather("Cycling");
               }}
               disabled={isLoading}
             >
-              {isLoading ? "Loading..." : "Get cycling Trails"}
+              {isLoading ? "Loading..." : "Get Cycling Trails"}
             </button>
             <button
               onClick={() => {
