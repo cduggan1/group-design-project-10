@@ -418,14 +418,14 @@ const Weather = ({
                           {trail.properties.name}
                           {excluded && <span style={{ color: "red", marginLeft: "10px" }}>— {reason}</span>}
                         </summary>
-                        <button
+                        <button className="btn-add-alert"
                           onClick={() =>
                             updateDestination(
                               `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
                             )
                           }
                         >
-                          Set as destination
+                          Set Destination
                         </button>
                         <div style={{ paddingLeft: "20px" }}>
                           If starting the trail in an hour:
