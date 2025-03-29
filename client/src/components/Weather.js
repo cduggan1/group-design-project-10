@@ -214,7 +214,12 @@ const Weather = ({
       }}
     >
       {/* Weather Alerts Section - Now at the top */}
-      <div style={{ width: "100%", textAlign: "center", marginBottom: "20px" }}>
+      <div style={{ 
+        width: "100%", 
+        textAlign: "center", 
+        marginBottom: "20px" 
+        }}>
+
         <WeatherAlerts latitude={latitude} longitude={longitude} />
       </div>
 
@@ -225,28 +230,47 @@ const Weather = ({
         justifyContent: "center", 
         marginBottom: "20px",
         gap: "20px"
-        }}>
-        <div style={{ width: "fit-content", textAlign: "center"}}>
+        }}  
+      >
+
+        <div style={{ 
+          width: "fit-content", 
+          textAlign: "center"
+          }}
+        >
             <UserWeatherAlerts weatherData={weatherData} latitude={latitude} longitude={longitude} />
         </div>
 
-        <div style={{ width: "fit-content", textAlign: "left"}}>
+        <div style={{ 
+          width: "fit-content", 
+          textAlign: "left"
+          }}
+        >
           <TrailWeatherPreferences onChange={setPreferences} />
         </div>
       </div>
+
+      {/*WRAPPER FLEX - TWO COLUMN LAYOUT */}
       <div
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
-          gap: "30px",
+            display: "flex",
+            flexDirection: "row",
+            width: "100%",
+            alignItems: "flex-start",
+            gap: "30px",
         }}
       >
-        {/* LEFT SIDE */}
+        {/* LEFT COLLUM */}
 
         {/* Weather Section - Displays weather forecast for selected coordinates */}
-        <div style={{ flex: 1, textAlign: "center" }}>
+        <div style={{ 
+          flex: 2, 
+          minWidth: "60%", 
+          textAlign: "center"
+           }}>
+            
           <h2>Weather Forecast</h2>
+
           {/* Map Section */}
           <div style={{ 
             height: "300px", 
@@ -300,6 +324,8 @@ const Weather = ({
 
           </div>
 
+          {/* Location / Distance Inputs */}
+
           <div>
             <input
               type="text"
@@ -313,6 +339,7 @@ const Weather = ({
               value={longitude}
               readOnly
             />
+
             <div style={{ margin: "10px 0" }}>
               <label>
                 Max Distance (km):&nbsp;
@@ -324,7 +351,8 @@ const Weather = ({
                 />
               </label>
             </div>
-
+            
+            {/* Buttons */}
             <div style={{ 
               display: "flex",
               gap: "12px", 
@@ -356,16 +384,8 @@ const Weather = ({
             >
               {isLoading ? "Loading..." : "Get Walking Trails"}
             </button>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "30px",
-              }}
-            >
-              {/* Left Side - Weather and Solar Data */}
-              {weatherData && solarData && (
+            {/* Left Side - Weather and Solar Data */}
+            {weatherData && solarData && (
                 <div style={{ flex: 1 }}>
                   <h2>Current Weather</h2>
                   <table
@@ -415,8 +435,15 @@ const Weather = ({
                   </table>
                 </div>
               )}
-
-            {/* RIGHT SIDE - TABLE */}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "30px",
+              }}
+            >
+            {/* Trail Weather Forecasts */}
 
             {/* Right Side - Trail Weather */}
             {topCycleTrails && trailWeather && (
@@ -489,6 +516,7 @@ const Weather = ({
                                 </div>
                               );
                             })}
+
                           </div>
                         </div>
                       </details>
@@ -558,14 +586,13 @@ const Weather = ({
                               );
                             })}
                           </div>
-                        </div>
+                          </div>
                       </details>
                     );
                   })}
-                </div>
-              </div>
-            )}
-          </div>
+               </div>
+            </div>
+          )}
 
           {/* Table Section - Displays weather data in a table beside the map */}
           <div style={{ flex: 1, textAlign: "center" }}>
@@ -635,19 +662,21 @@ const Weather = ({
                 </table>
               </div>
             )}
+
           </div>
         </div>
-
+      </div>
+    </div>
         {/* Error Message Display */}
         {error && (
           <div style={{ marginTop: "20px", color: "red", fontWeight: "bold" }}>
             <p>{error}</p>
           </div>
         )}
+
       </div>
-      </div>
-      </div>
-    );
-  };
+    </div>
+  );
+};
 
 export default Weather;
