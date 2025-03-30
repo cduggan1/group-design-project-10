@@ -363,7 +363,7 @@ const Weather = ({
             </tr>
           </tbody>
         </table>
-        <hr style={{ margin: "20px 0" }} />
+        <hr style={{ margin: "10px 0" }} />
       </div>
 
       <div>
@@ -418,12 +418,13 @@ const Weather = ({
               })}</div>          
               </div>
             </div>
-
           )}
 
           {topWalkingTrails && trailWeather && (
-            <div>
+            <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
               <h2>Walking Trail Weather</h2>
+              <div style={{ textAlign:"left" }}>
+
               {topWalkingTrails.features.map((trail, index) => {
                 const segment = trailWeather.features[index]?.properties?.segments[0];
                 const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
@@ -450,10 +451,12 @@ const Weather = ({
                 );
               })}
             </div>
+            </div>
           )}
         </div>
-      </div>
+        </div>
       )}
+
         <div style={{ flex: 1, textAlign: "center" }}>
             {weatherData && weatherData.length === 24 && (
               <div className="weather-table-container">
