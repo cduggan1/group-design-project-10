@@ -205,6 +205,7 @@ const Weather = ({
   }
 
   return (
+    
     <div
       style={{
         display: "flex",
@@ -260,346 +261,200 @@ const Weather = ({
             gap: "30px",
         }}
       >
-        {/* LEFT COLLUM */}
+ {/* LEFT COLUMN: Weather Overview + Trails */}
+<div style={{ flex: 1, minWidth: "100%", textAlign:"center" }}>
+  <h2 style={{ textAlign: "center" }}>Weather Forecast</h2>
 
-        {/* Weather Section - Displays weather forecast for selected coordinates */}
-        <div style={{ 
-          flex: 2, 
-          minWidth: "60%", 
-          textAlign: "center"
-           }}>
-            
-          <h2>Weather Forecast</h2>
-
-          {/* Map Section */}
-          <div style={{ 
-            height: "300px", 
-            width: "100%", 
-            marginBottom: "10px" }}>
-
-            <MapContainer
-              center={[53.49, -7.562]}
-              zoom={7}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              <LocationMarker />
-
-              {/* Map Trail Routes */}
-              {topCycleTrails &&
-                topCycleTrails.features.map((trail, index) => {
-                  const polylineCoords = trail.geometry.coordinates.map(
-                    ([lng, lat]) => [lat, lng]
-                  ); // Convert to Leaflet format
-
-                  return (
-                    <Polyline
-                      key={index}
-                      positions={polylineCoords}
-                      color="blue"
-                      weight={5}
-                    ></Polyline>
-                  );
-                })}
-
-              {topWalkingTrails &&
-                topWalkingTrails.features.map((trail, index) => {
-                  const polylineCoords = trail.geometry.coordinates.map(
-                    ([lng, lat]) => [lat, lng]
-                  ); // Convert to Leaflet format
-
-                  return (
-                    <Polyline
-                      key={index}
-                      positions={polylineCoords}
-                      color="red"
-                      weight={5}
-                    ></Polyline>
-                  );
-                })}
-            </MapContainer>
-
-          </div>
-
-          {/* Location / Distance Inputs */}
-
-          <div>
-            <input
-              type="text"
-              placeholder="Latitude"
-              value={latitude}
-              readOnly
+  {/* Map */}
+  <div style={{ height: "300px", width: "100%", marginBottom: "10px" }}>
+    <MapContainer
+      center={[53.49, -7.562]}
+      zoom={7}
+      style={{ height: "100%", width: "100%" }}
+    >
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      />
+      <LocationMarker />
+      {topCycleTrails &&
+        topCycleTrails.features.map((trail, index) => {
+          const polylineCoords = trail.geometry.coordinates.map(
+            ([lng, lat]) => [lat, lng]
+          );
+          return (
+            <Polyline
+              key={index}
+              positions={polylineCoords}
+              color="blue"
+              weight={5}
             />
-            <input
-              type="text"
-              placeholder="Longitude"
-              value={longitude}
-              readOnly
+          );
+        })}
+      {topWalkingTrails &&
+        topWalkingTrails.features.map((trail, index) => {
+          const polylineCoords = trail.geometry.coordinates.map(
+            ([lng, lat]) => [lat, lng]
+          );
+          return (
+            <Polyline
+              key={index}
+              positions={polylineCoords}
+              color="red"
+              weight={5}
             />
-
-            <div style={{ margin: "10px 0" }}>
-              <label>
-                Max Distance (km):&nbsp;
-                <input
-                  type="number"
-                  value={maxDistance}
-                  onChange={(e) => setMaxDistance(e.target.value)}
-                  style={{ width: "80px" }}
-                />
-              </label>
-            </div>
-            
-            {/* Buttons */}
-            <div style={{ 
-              display: "flex",
-              gap: "12px", 
-              justifyContent: "center" }}>
-
-              <button className="btn-add-alert"
-              onClick={() => {
-                fetchSolar();
-                fetchWeather();
-              }}
-            >
-              Get Weather at Your Location
-            </button>
-              <button className="btn-add-alert"
-              onClick={() => {
-                handleFetchCyclingTrails();
-                fetchTrailWeather("Cycling");
-              }}
-              disabled={isLoading}
-            >
-              {isLoading ? "Loading..." : "Get Cycling Trails"}
-            </button>
-            <button className="btn-add-alert"
-              onClick={() => {
-                handleFetchWalkingTrails();
-                fetchTrailWeather("Walking");
-              }}
-              disabled={isLoading}
-            >
-              {isLoading ? "Loading..." : "Get Walking Trails"}
-            </button>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "30px",
-              }}
-            >
+          );
+        })}
+    </MapContainer>
+  </div>
+  
+  
+  '
+ {/*INSERT HERE div here for 2 collumns*/}
 
 
-              {/* Weather Overview */}
-              {/* Left Side - Weather and Solar Data */}
-              {weatherData && solarData && (
-                <div style={{ flex: 1 }}>
-                  <h2>Current Weather</h2>
-                  <table
-                    style={{
-                      textAlign: "center",
-                      width: "100%",
-                      borderCollapse: "collapse",
-                    }}
-                  >
-                    <tbody>
-                      <tr>
-                        <td>Temperature</td>
-                        <td>Cloudiness</td>
-                        <td>Wind</td>
-                        <td>Precipitation</td>
-                      </tr>
-                      <tr>
-                        <td>{weatherData[0].temperature}°C</td>
-                        <td>{weatherData[0].cloudiness}%</td>
-                        <td>
-                          {weatherData[0].wind_speed} km/h{" "}
-                          {weatherData[0].wind_direction}
-                        </td>
-                        <td>{weatherData[0].rain} mm</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <hr />
-                  <h2>Sun Times</h2>
-                  <table
-                    style={{
-                      textAlign: "center",
-                      width: "100%",
-                      borderCollapse: "collapse",
-                    }}
-                  >
-                    <tbody>
-                      <tr>
-                        <td>Sunrise</td>
-                        <td>Sunset</td>
-                      </tr>
-                      <tr>
-                        <td>{solarData[0].rise}</td>
-                        <td>{solarData[0].set}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )}
+ 
+  {/* Location Inputs + Buttons */}
+  <div style={{ textAlign: "center", marginBottom: "20px" }}>
+    <input type="text" value={latitude} readOnly />
+    <input type="text" value={longitude} readOnly />
+    <div style={{ margin: "10px 0" }}>
+      <label>
+        Max Distance (km):&nbsp;
+        <input
+          type="number"
+          value={maxDistance}
+          onChange={(e) => setMaxDistance(e.target.value)}
+          style={{ width: "80px" }}
+        />
+      </label>
+    </div>
+    <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+      <button className="btn-add-alert" onClick={() => { fetchSolar(); fetchWeather(); }}>
+        Get Weather at Your Location
+      </button>
+      <button className="btn-add-alert" onClick={() => { handleFetchCyclingTrails(); fetchTrailWeather("Cycling"); }} disabled={isLoading}>
+        {isLoading ? "Loading..." : "Get Cycling Trails"}
+      </button>
+      <button className="btn-add-alert" onClick={() => { handleFetchWalkingTrails(); fetchTrailWeather("Walking"); }} disabled={isLoading}>
+        {isLoading ? "Loading..." : "Get Walking Trails"}
+      </button>
+    </div>
+  </div>
 
-            {/* Trail Weather Forecasts */}
+  {/* Weather + Trails Wrap (no gap here!) */}
+  {weatherData && solarData && (
+    <div style={{ display: "flex", textAlign: "center", flexDirection: "column", gap: "20px" }}>
+      <div>
+        <h2>Current Weather</h2>
+        <table style={{ width: "100%", textAlign: "center", borderCollapse: "collapse" }}>
+          <tbody>
+            <tr>
+              <td>Temperature</td>
+              <td>Cloudiness</td>
+              <td>Wind</td>
+              <td>Precipitation</td>
+            </tr>
+            <tr>
+              <td>{weatherData[0].temperature}°C</td>
+              <td>{weatherData[0].cloudiness}%</td>
+              <td>{weatherData[0].wind_speed} km/h {weatherData[0].wind_direction}</td>
+              <td>{weatherData[0].rain} mm</td>
+            </tr>
+          </tbody>
+        </table>
+        <hr style={{ margin: "20px 0" }} />
+      </div>
 
-            {/* Right Side - Trail Weather */}
-            {topCycleTrails && trailWeather && (
-              <div style={{ flex: 1 }}>
-                <div>
-                  <h2>Cycling Trail Weather</h2>
-                  {topCycleTrails.features.map((trail, index) => {
-                    const segment = trailWeather.features[index]?.properties?.segments[0];
-                    const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
-                    const excluded = !!reason;
+      <div>
+        <h2>Sun Times</h2>
+        <table style={{ width: "100%", textAlign: "center", borderCollapse: "collapse" }}>
+          <tbody>
+            <tr>
+              <td>Sunrise</td>
+              <td>Sunset</td>
+            </tr>
+            <tr>
+              <td>{solarData[0].rise}</td>
+              <td>{solarData[0].set}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-                    return (
-                      <details key={index} style={{ marginBottom: "10px" }}>
-                        <summary>
-                          {trail.properties.name}
-                          {excluded && <span style={{ 
-                            color: "red", 
-                            marginLeft: "10px" 
-                            }}>— {reason}</span>}
-                        </summary>
-                        <button className="btn-add-alert"
-                          onClick={() =>
-                            updateDestination(
-                              `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
-                            )
-                          }
-                        >
-                          Set Destination
-                        </button>
-                        <div style={{ paddingLeft: "20px" }}>
-                          If starting the trail in an hour:
-                          
-                          <div style={{ 
-                            listStyleType: "none", 
-                            paddingLeft: "0" 
-                            }}>
+      <div style={{ display: "flex", justifyContent: "space-evenly", gap: "12px" }}>
 
-                            {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
-                              const isoString = segment.weather.forecast_time;
-                              const date = new Date(isoString);
-                              const timeString = date.toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "numeric",
-                                hour12: true,
-                              });
-                              const formattedTime = timeString.replace(":00", "");
+          {/* Trails Section */}
+          {topCycleTrails && trailWeather && (
+            <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
 
-                              return (
-                                <div key={segmentIndex + 1}>
-                                  <table
-                                    align="center"
-                                    style={{ 
-                                      width: "100%", 
-                                      borderCollapse: "collapse" 
-                                    }}
-                                  >
-                                    <tbody>
-                                      <tr>
-                                        <th>{formattedTime}:</th>
-                                        <th>{segment.weather.rain}mm precipitation</th>
-                                        <th>{segment.weather.temperature}°C</th>
-                                        <th>{segment.weather.cloudiness}% cloud cover</th>
-                                        <th>
-                                          {segment.weather.wind_speed}km/h{" "}
-                                          {segment.weather.wind_direction}
-                                        </th>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              );
-                            })}
+            <div>
+              <h2>Cycling Trail Weather</h2>
+              <div style={{ textAlign:"left" }}>
+              {topCycleTrails.features.map((trail, index) => {
+                const segment = trailWeather.features[index]?.properties?.segments[0];
+                const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
+                const excluded = !!reason;
 
-                          </div>
-                        </div>
-                      </details>
-                    );
-                  })}
-                </div>
+                return (
+                  <details key={index} style={{ marginBottom: "10px" }}>
+                    <summary>
+                      {trail.properties.name}
+                      {excluded && (
+                        <span style={{ color: "red", marginLeft: "10px" }}>
+                          — {reason}
+                        </span>
+                      )}
+                    </summary>
+                    <button className="btn-add-alert" onClick={() =>
+                      updateDestination(
+                        `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+                      )
+                    }>
+                      Set Destination
+                    </button>
+                  </details>
+                );
+              })}</div>          
               </div>
-            )}
-
-            {topWalkingTrails && trailWeather && (
-              <div style={{ flex: 1 }}>
-                <div>
-                  <h2>Walking Trail Weather</h2>
-                  {topWalkingTrails.features.map((trail, index) => {
-                    const segment = trailWeather.features[index]?.properties?.segments[0];
-                    const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
-                    const excluded = !!reason;
-
-                    return (
-                      <details key={index} style={{ marginBottom: "10px" }}>
-                        <summary>
-                          {trail.properties.name}
-                          {excluded && <span style={{ color: "red", marginLeft: "10px" }}>— {reason}</span>}
-                        </summary>
-                        <button className="btn-add-alert"
-                          onClick={() =>
-                            updateDestination(
-                              `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
-                            )
-                          }
-                        >
-                          Set Destination
-                        </button>
-                        <div style={{ paddingLeft: "20px" }}>
-                          If starting the trail in an hour:
-                          <div style={{ listStyleType: "none", paddingLeft: "0" }}>
-                            {trailWeather.features[index].properties.segments.map((segment, segmentIndex) => {
-                              const isoString = segment.weather.forecast_time;
-                              const date = new Date(isoString);
-                              const timeString = date.toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "numeric",
-                                hour12: true,
-                              });
-                              const formattedTime = timeString.replace(":00", "");
-
-                              return (
-                                <div key={segmentIndex + 1}>
-                                  <table
-                                    align="center"
-                                    style={{ width: "100%", borderCollapse: "collapse" }}
-                                  >
-                                    <tbody>
-                                      <tr>
-                                        <th>{formattedTime}:</th>
-                                        <th>{segment.weather.rain}mm precipitation</th>
-                                        <th>{segment.weather.temperature}°C</th>
-                                        <th>{segment.weather.cloudiness}% cloud cover</th>
-                                        <th>
-                                          {segment.weather.wind_speed}km/h{" "}
-                                          {segment.weather.wind_direction}
-                                        </th>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          </div>
-                      </details>
-                    );
-                  })}
-               </div>
             </div>
+
           )}
 
-          {/* Table Section - Displays weather data in a table beside the map */}
-          <div style={{ flex: 1, textAlign: "center" }}>
+          {topWalkingTrails && trailWeather && (
+            <div>
+              <h2>Walking Trail Weather</h2>
+              {topWalkingTrails.features.map((trail, index) => {
+                const segment = trailWeather.features[index]?.properties?.segments[0];
+                const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
+                const excluded = !!reason;
+
+                return (
+                  <details key={index} style={{ marginBottom: "10px" }}>
+                    <summary>
+                      {trail.properties.name}
+                      {excluded && (
+                        <span style={{ color: "red", marginLeft: "10px" }}>
+                          — {reason}
+                        </span>
+                      )}
+                    </summary>
+                    <button className="btn-add-alert" onClick={() =>
+                      updateDestination(
+                        `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+                      )
+                    }>
+                      Set Destination
+                    </button>
+                  </details>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+      )}
+        <div style={{ flex: 1, textAlign: "center" }}>
             {weatherData && weatherData.length === 24 && (
               <div className="weather-table-container">
                 <table className="weather-table">
@@ -666,20 +521,17 @@ const Weather = ({
                 </table>
               </div>
             )}
-
+            
           </div>
-        </div>
-      </div>
-    </div>
+          </div>
         {/* Error Message Display */}
         {error && (
           <div style={{ marginTop: "20px", color: "red", fontWeight: "bold" }}>
             <p>{error}</p>
           </div>
         )}
-
+        </div>
       </div>
-    </div>
   );
 };
 
