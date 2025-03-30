@@ -251,16 +251,6 @@ const Weather = ({
         </div>
       </div>
 
-      {/*WRAPPER FLEX - TWO COLUMN LAYOUT */}
-      <div
-        style={{
-            display: "flex",
-            flexDirection: "row",
-            width: "100%",
-            alignItems: "flex-start",
-            gap: "30px",
-        }}
-      >
  {/* LEFT COLUMN: Weather Overview + Trails */}
 <div style={{ flex: 1, minWidth: "100%", textAlign:"center" }}>
   <h2 style={{ textAlign: "center" }}>Weather Forecast</h2>
@@ -309,7 +299,7 @@ const Weather = ({
   </div>
   
   
-  '
+
  {/*INSERT HERE div here for 2 collumns*/}
 
 
@@ -341,7 +331,16 @@ const Weather = ({
       </button>
     </div>
   </div>
-
+   {/*WRAPPER FLEX - TWO COLUMN LAYOUT */}
+   <div
+        style={{
+            display: "flex",
+            flexDirection: "row",
+            width: "100%",
+            alignItems: "flex-start",
+            gap: "30px",
+        }}
+      >
   {/* Weather + Trails Wrap (no gap here!) */}
   {weatherData && solarData && (
     <div style={{ display: "flex", textAlign: "center", flexDirection: "column", gap: "20px" }}>
