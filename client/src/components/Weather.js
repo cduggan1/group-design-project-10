@@ -380,160 +380,221 @@ const Weather = ({
           </tbody>
         </table>
       </div>
+    </div>
+  )}
 
-      <div style={{ display: "flex", justifyContent: "space-evenly", gap: "12px" }}>
+  <div style={{ display: "flex", justifyContent: "space-evenly", gap: "12px" }}>
 
-          {/* Trails Section */}
-          {topCycleTrails && trailWeather && (
-            <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
+  {/* Trails Section */}
+  {topCycleTrails && trailWeather && (
+    <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
 
-            <div>
-              <h2>Cycling Trail Weather</h2>
-              <div style={{ textAlign:"left" }}>
-              {topCycleTrails.features.map((trail, index) => {
-                const segment = trailWeather.features[index]?.properties?.segments[0];
-                const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
-                const excluded = !!reason;
+    <div>
+      <h2>Cycling Trail Weather</h2>
+      <div style={{ textAlign:"left" }}>
+      {topCycleTrails.features.map((trail, index) => {
+        const segment = trailWeather.features[index]?.properties?.segments[0];
+        const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
+        const excluded = !!reason;
 
-                return (
-                  <details key={index} style={{ marginBottom: "10px" }}>
-                    <summary>
-                      {trail.properties.name}
-                      {excluded && (
-                        <span style={{ color: "red", marginLeft: "10px" }}>
-                          — {reason}
-                        </span>
-                      )}
-                    </summary>
-                    <button className="btn-add-alert" onClick={() =>
-                      updateDestination(
-                        `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
-                      )
-                    }>
-                      Set Destination
-                    </button>
-                  </details>
-                );
-              })}</div>          
-              </div>
+        return (
+          <details key={index} style={{ marginBottom: "10px" }}>
+            <summary>
+              {trail.properties.name}
+              {excluded && (
+                <span style={{ color: "red", marginLeft: "10px" }}>
+                  — {reason}
+                </span>
+              )}
+            </summary>
+            <button className="btn-add-alert" onClick={() =>
+              updateDestination(
+                `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+              )
+            }>
+              Set Destination
+            </button>
+
+            <div style={{ paddingLeft: "20px" }}>
+                  If starting the trail in an hour:
+                  <div
+                    style={{ listStyleType: "none", paddingLeft: "0" }}
+                  >
+                    {trailWeather.features[
+                      index
+                    ].properties.segments.map(
+                      (segment, segmentIndex) => {
+                        const isoString = segment.weather.forecast_time;
+                        const date = new Date(isoString);
+                        const timeString = date.toLocaleTimeString(
+                          "en-US",
+                          {
+                            hour: "numeric",
+                            minute: "numeric",
+                            hour12: true,
+                          }
+                        );
+                        const formattedTime = timeString.replace(
+                          ":00",
+                          ""
+                        );
+
+                        return (
+                          <div key={segmentIndex + 1}>
+                            <table
+                              align="center"
+                              style={{
+                                width: "100%",
+                                borderCollapse: "collapse",
+                              }}
+                            >
+                              <tbody>
+                                <tr>
+                                  <th>{formattedTime}:</th>
+                                  <th>
+                                    {segment.weather.rain}mm
+                                    precipitation
+                                  </th>
+                                  <th>
+                                    {segment.weather.temperature}°C
+                                  </th>
+                                  <th>
+                                    {segment.weather.cloudiness}% cloud
+                                    cover
+                                  </th>
+                                  <th>
+                                    {segment.weather.wind_speed}km/h{" "}
+                                    {segment.weather.wind_direction}
+                                  </th>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
             </div>
-          )}
+          </details>
+        );
+      })}</div>          
+      </div>
+    </div>
+  )}
 
-          {topWalkingTrails && trailWeather && (
-            <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
-              <h2>Walking Trail Weather</h2>
-              <div style={{ textAlign:"left" }}>
+  {topWalkingTrails && trailWeather && (
+    <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
+      <h2>Walking Trail Weather</h2>
+      <div style={{ textAlign:"left" }}>
 
-              {topWalkingTrails.features.map((trail, index) => {
-                const segment = trailWeather.features[index]?.properties?.segments[0];
-                const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
-                const excluded = !!reason;
+      {topWalkingTrails.features.map((trail, index) => {
+        const segment = trailWeather.features[index]?.properties?.segments[0];
+        const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
+        const excluded = !!reason;
 
-                return (
-                  <details key={index} style={{ marginBottom: "10px" }}>
-                    <summary>
-                      {trail.properties.name}
-                      {excluded && (
-                        <span style={{ color: "red", marginLeft: "10px" }}>
-                          — {reason}
-                        </span>
-                      )}
-                    </summary>
-                    <button className="btn-add-alert" onClick={() =>
-                      updateDestination(
-                        `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
-                      )
-                    }>
-                      Set Destination
-                    </button>
-                  </details>
-                );
-              })}
-            </div>
-            </div>
-          )}
-        </div>
-        </div>
-      )}
+        return (
+          <details key={index} style={{ marginBottom: "10px" }}>
+            <summary>
+              {trail.properties.name}
+              {excluded && (
+                <span style={{ color: "red", marginLeft: "10px" }}>
+                  — {reason}
+                </span>
+              )}
+            </summary>
+            <button className="btn-add-alert" onClick={() =>
+              updateDestination(
+                `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+              )
+            }>
+              Set Destination
+            </button>
+          </details>
+        );
+      })}
+    </div>
+    </div>
+  )}
+  </div>
 
-        <div style={{ flex: 1, textAlign: "center" }}>
-            {weatherData && weatherData.length === 24 && (
-              <div className="weather-table-container">
-                <table className="weather-table">
-                  <thead>
-                    <tr>
-                      <th>Time </th>
-                      <th>Temperature</th>
-                      <th>Cloudiness</th>
-                      <th>Wind Speed</th>
-                      <th>Precipitation</th>
-                      <th style={{ borderLeft: "3px solid black" }}>Time</th>
-                      <th>Temperature</th>
-                      <th>Cloudiness</th>
-                      <th>Wind Speed</th>
-                      <th>Precipitation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {weatherData &&
-                      weatherData.length > 1 &&
-                      weatherData.map((data, index) => {
-                        if (index % 2 === 0) {
-                          const nextData = weatherData[index + 1]; // Get the next hour data (pair)
-                          return (
-                            <tr key={index}>
-                              <td>{data.time}</td>
-                              <td>{data.temperature}°C</td>
-                              <td>{data.cloudiness}%</td>
-                              <td>
-                                {data.wind_speed} km/h {data.wind_direction}
+    <div style={{ flex: 1, textAlign: "center" }}>
+        {weatherData && weatherData.length === 24 && (
+          <div className="weather-table-container">
+            <table className="weather-table">
+              <thead>
+                <tr>
+                  <th>Time </th>
+                  <th>Temperature</th>
+                  <th>Cloudiness</th>
+                  <th>Wind Speed</th>
+                  <th>Precipitation</th>
+                  <th style={{ borderLeft: "3px solid black" }}>Time</th>
+                  <th>Temperature</th>
+                  <th>Cloudiness</th>
+                  <th>Wind Speed</th>
+                  <th>Precipitation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {weatherData &&
+                  weatherData.length > 1 &&
+                  weatherData.map((data, index) => {
+                    if (index % 2 === 0) {
+                      const nextData = weatherData[index + 1]; // Get the next hour data (pair)
+                      return (
+                        <tr key={index}>
+                          <td>{data.time}</td>
+                          <td>{data.temperature}°C</td>
+                          <td>{data.cloudiness}%</td>
+                          <td>
+                            {data.wind_speed} km/h {data.wind_direction}
+                          </td>
+                          <td>{data.rain} mm</td>
+
+                          {nextData ? (
+                            <>
+                              <td style={{ borderLeft: "3px solid black" }}>
+                                {nextData.time}
                               </td>
-                              <td>{data.rain} mm</td>
-
-                              {nextData ? (
-                                <>
-                                  <td style={{ borderLeft: "3px solid black" }}>
-                                    {nextData.time}
-                                  </td>
-                                  <td>{nextData.temperature}°C</td>
-                                  <td>{nextData.cloudiness}%</td>
-                                  <td>
-                                    {nextData.wind_speed} km/h{" "}
-                                    {nextData.wind_direction}
-                                  </td>
-                                  <td>{nextData.rain} mm</td>
-                                </>
-                              ) : (
-                                // If there's no pair (odd number of entries), show empty cells
-                                <>
-                                  <td>-</td>
-                                  <td>-</td>
-                                  <td>-</td>
-                                  <td>-</td>
-                                  <td>-</td>
-                                </>
-                              )}
-                            </tr>
-                          );
-                        } else {
-                          return null; // Skip odd rows as they are already included in pairs
-                        }
-                      })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            
-          </div>
-          </div>
-        {/* Error Message Display */}
-        {error && (
-          <div style={{ marginTop: "20px", color: "red", fontWeight: "bold" }}>
-            <p>{error}</p>
+                              <td>{nextData.temperature}°C</td>
+                              <td>{nextData.cloudiness}%</td>
+                              <td>
+                                {nextData.wind_speed} km/h{" "}
+                                {nextData.wind_direction}
+                              </td>
+                              <td>{nextData.rain} mm</td>
+                            </>
+                          ) : (
+                            // If there's no pair (odd number of entries), show empty cells
+                            <>
+                              <td>-</td>
+                              <td>-</td>
+                              <td>-</td>
+                              <td>-</td>
+                              <td>-</td>
+                            </>
+                          )}
+                        </tr>
+                      );
+                    } else {
+                      return null; // Skip odd rows as they are already included in pairs
+                    }
+                  })}
+              </tbody>
+            </table>
           </div>
         )}
-        </div>
+        
       </div>
+      </div>
+    {/* Error Message Display */}
+    {error && (
+      <div style={{ marginTop: "20px", color: "red", fontWeight: "bold" }}>
+        <p>{error}</p>
+      </div>
+    )}
+    </div>
+  </div>
   );
 };
 
