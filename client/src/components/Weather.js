@@ -190,7 +190,24 @@ const Weather = ({
       setSolarData(null);
     }
   };
-
+  
+  function getWeatherSeverity(weather) {
+    const { temperature, wind_speed, rain } = weather;
+  
+    if (temperature < 5 || temperature > 30 || wind_speed > 30 || rain > 5) {
+      return "high";
+    } else if (
+      (temperature >= 5 && temperature < 15) ||
+      (temperature > 25 && temperature <= 30) ||
+      (wind_speed >= 15 && wind_speed <= 30) ||
+      (rain >= 1 && rain <= 5)
+    ) {
+      return "moderate";
+    } else {
+      return "low";
+    }
+  }
+  
   // Function to handle map click events and update latitude & longitude
   function LocationMarker() {
     useMapEvents({
@@ -297,13 +314,7 @@ const Weather = ({
         })}
     </MapContainer>
   </div>
-  
-  
 
- {/*INSERT HERE div here for 2 collumns*/}
-
-
- 
   {/* Location Inputs + Buttons */}
   <div style={{ textAlign: "center", marginBottom: "20px" }}>
     <input type="text" value={latitude} readOnly />
