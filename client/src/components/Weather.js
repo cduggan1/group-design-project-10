@@ -402,6 +402,11 @@ const Weather = ({
 
     <div>
       <h2>Cycling Trail Weather</h2>
+      <div style={{ display: "flex", gap: "10px", margin: "10px 0", justifyContent: "center" }}>
+        <div className="weather-severity-low" style={{ padding: "5px 10px", borderRadius: "4px" }}>Low</div>
+        <div className="weather-severity-moderate" style={{ padding: "5px 10px", borderRadius: "4px" }}>Moderate</div>
+        <div className="weather-severity-high" style={{ padding: "5px 10px", borderRadius: "4px" }}>High</div>
+      </div>
       <div style={{ textAlign:"left" }}>
       {topCycleTrails.features.map((trail, index) => {
         const segment = trailWeather.features[index]?.properties?.segments[0];
@@ -497,6 +502,11 @@ const Weather = ({
   {topWalkingTrails && trailWeather && (
     <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
       <h2>Walking Trail Weather</h2>
+      <div style={{ display: "flex", gap: "10px", margin: "10px 0", justifyContent: "center" }}>
+        <div className="weather-severity-low" style={{ padding: "5px 10px", borderRadius: "4px" }}>Low</div>
+        <div className="weather-severity-moderate" style={{ padding: "5px 10px", borderRadius: "4px" }}>Moderate</div>
+        <div className="weather-severity-high" style={{ padding: "5px 10px", borderRadius: "4px" }}>High</div>
+      </div>
       <div style={{ textAlign:"left" }}>
 
       {topWalkingTrails.features.map((trail, index) => {
