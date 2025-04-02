@@ -41,3 +41,22 @@
 .weather-severity-high {
     background-color: #fbeaea; /* light red */
 }
+
+.severity-bar {
+  width: 100px;
+  height: 10px;
+  border-radius: 5px;
+  margin: 6px 0;
+}
+
+.severity-bar.low {
+  background: linear-gradient(to right, #a8e6a3, #d0f5c9);
+}
+
+.severity-bar.moderate {
+  background: linear-gradient(to right, #fff59d, #ffe082);
+}
+
+.severity-bar.high {
+  background: linear-gradient(to right, #ff8a65, #e57373);
+}
