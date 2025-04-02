@@ -54,7 +54,13 @@ def get_reverse_address(request):
         data = APICache.get_cached_response(api_url, timeout=604800)
         if not data:
             return JsonResponse({"error": "Failed to fetch weather data"}, status=500)
-        
+        print("DEBUG: ", data)
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "Invalid response format from API: " + data}, status=500)
+
 
         address = data["response"]["features"][0]["properties"]["label"]
         values = []
