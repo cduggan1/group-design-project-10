@@ -208,23 +208,28 @@ const Weather = ({
     }
   }
 
-  function getAverageSeverity(segments) {
-    if (!segments || segments.length === 0) return "low";
-    let severityCounts = { low: 0, moderate: 0, high: 0 };
-
+  function getSeverityPercent(segments) {
+    if (!segments || segments.length === 0) return 0;
+  
+    let total = 0;
     segments.forEach(segment => {
-      const severity = getWeatherSeverity(segment.weather);
-      severityCounts[severity]++;
+      const rain = segment.weather.rain || 0;
+      const wind = segment.weather.wind_speed || 0;
+      const temp = segment.weather.temperature || 0;
+  
+      const score =
+        (rain * 2) +
+        (wind * 0.5) +
+        (temp < 5 || temp > 30 ? 20 : 0); // penalize temps outside comfort
+      total += score;
     });
   
-    const total = segments.length;
-    const highRatio = severityCounts.high / total;
-    const moderateRatio = severityCounts.moderate / total;
+    const avg = total / segments.length;
   
-    if (highRatio > 0.4) return "high";
-    if (moderateRatio > 0.3 || highRatio > 0.2) return "moderate";
-    return "low";
+    // Normalize: 0 = green, 50 = red
+    return Math.min(100, (avg / 50) * 100);
   }
+  
   
   
   // Function to handle map click events and update latitude & longitude
