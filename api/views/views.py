@@ -89,6 +89,13 @@ def get_directions(request):
         if not data:
             return JsonResponse({"error": "Failed to fetch directions"}, status=500)
         
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "Invalid response format from API: " + data}, status=500)
+            
+        
         instructions = []
         for feature in data.get("features", []):
             for segment in feature.get("properties", {}).get("segments", []):
