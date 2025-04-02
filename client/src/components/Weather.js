@@ -501,7 +501,11 @@ const Weather = ({
                               }}
                             >
                               <tbody>
-                              <tr className={`weather-severity-${severity}`}>                                  <th>{formattedTime}:</th>
+                              <tr>                                  
+                                <th>
+                                  <span className={`severity-dot dot-${severity}`}></span>
+                                  {formattedTime}:
+                                </th>
                                   <th>
                                     {segment.weather.rain}mm
                                     precipitation
@@ -611,7 +615,11 @@ const Weather = ({
                               }}
                             >
                               <tbody>
-                              <tr className={`weather-severity-${severity}`}>                                  <th>{formattedTime}:</th>
+                              <tr>                                  
+                                <th>
+                                  <span className={`severity-dot dot-${severity}`}></span>
+                                  {formattedTime}:
+                                </th>
                                   <th>
                                     {segment.weather.rain}mm
                                     precipitation
