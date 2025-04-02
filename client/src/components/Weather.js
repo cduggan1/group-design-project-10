@@ -190,7 +190,7 @@ const Weather = ({
       setSolarData(null);
     }
   };
-  
+
   function getWeatherSeverity(weather) {
     const { temperature, wind_speed, rain } = weather;
   
@@ -449,7 +449,9 @@ const Weather = ({
                           ":00",
                           ""
                         );
-
+                        
+                        const severity = getWeatherSeverity(segment.weather);
+                        
                         return (
                           <div key={segmentIndex + 1}>
                             <table
@@ -460,8 +462,7 @@ const Weather = ({
                               }}
                             >
                               <tbody>
-                                <tr>
-                                  <th>{formattedTime}:</th>
+                              <tr className={`weather-severity-${severity}`}>                                  <th>{formattedTime}:</th>
                                   <th>
                                     {segment.weather.rain}mm
                                     precipitation
