@@ -210,21 +210,19 @@ const Weather = ({
 
   function getAverageSeverity(segments) {
     if (!segments || segments.length === 0) return "low";
-    let total = 0;
-  
+    let severityCounts = { low: 0, moderate: 0, high: 0 };
+
     segments.forEach(segment => {
-      const rain = segment.weather.rain || 0;
-      const wind = segment.weather.wind_speed || 0;
-      const cloud = segment.weather.cloudiness || 0;
-  
-      const score = rain * 2 + wind * 0.5 + cloud * 0.1;
-      total += score;
+      const severity = getWeatherSeverity(segment.weather);
+      severityCounts[severity]++;
     });
   
-    const avgScore = total / segments.length;
+    const total = segments.length;
+    const highRatio = severityCounts.high / total;
+    const moderateRatio = severityCounts.moderate / total;
   
-    if (avgScore > 40) return "high";
-    if (avgScore > 20) return "moderate";
+    if (highRatio > 0.4) return "high";
+    if (moderateRatio > 0.3 || highRatio > 0.2) return "moderate";
     return "low";
   }
   
