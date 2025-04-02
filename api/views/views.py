@@ -9,8 +9,11 @@ from django.core.serializers import serialize
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.conf import settings
+from django.core.cache import cache
 from django.contrib.gis.geos import Point
 from ..models import Trail
+from ..utils.api_cache import APICache
+
 
 def get_address(request):
     if request.method == "GET":
@@ -22,12 +25,11 @@ def get_address(request):
         api_key = settings.LOCATION_API_KEY
 
         api_url = f"https://api.geocodify.com/v2/geocode?api_key={api_key}&q={address}"
-        response = requests.get(api_url)
 
-        if response.status_code != 200:
-            return JsonResponse({"error": "Failed to fetch weather data"}, status=response.status_code)
+        data = APICache.get_cached_response(api_url, timeout=604800)
+        if not data:
+            return JsonResponse({"error": "Failed to fetch weather data"}, status=500)
 
-        data = json.loads(response.text)
         coordinates = data["response"]["features"][0]["geometry"]["coordinates"]
         longitude, latitude = coordinates
         address = data["response"]["features"][0]["properties"]["label"]
@@ -48,12 +50,18 @@ def get_reverse_address(request):
         api_key = settings.LOCATION_API_KEY
 
         api_url = f"https://api.geocodify.com/v2/reverse?api_key={api_key}&lat={latitude}&lng={longitude}"
-        response = requests.get(api_url)
 
-        if response.status_code != 200:
-            return JsonResponse({"error": "Failed to fetch weather data"}, status=response.status_code)
-        
-        data = json.loads(response.text)
+        data = APICache.get_cached_response(api_url, timeout=604800)
+        if not data:
+            return JsonResponse({"error": "Failed to fetch weather data"}, status=500)
+        print("DEBUG: ", data)
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "Invalid response format from API: " + data}, status=500)
+
+
         address = data["response"]["features"][0]["properties"]["label"]
         values = []
 
@@ -76,12 +84,18 @@ def get_directions(request):
         api_key = settings.DIRECTIONS_API_KEY
 
         api_url = f"https://api.openrouteservice.org/v2/directions/driving-car?api_key={api_key}&start={start}&end={destination}"
-        response = requests.get(api_url)
 
-        if response.status_code != 200:
-            return JsonResponse({"error": "Failed to fetch directions"}, status=response.status_code)
-
-        data = json.loads(response.text)
+        data = APICache.get_cached_response(api_url, timeout=600)
+        if not data:
+            return JsonResponse({"error": "Failed to fetch directions"}, status=500)
+        
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                return JsonResponse({"error": "Invalid response format from API: " + data}, status=500)
+            
+        
         instructions = []
         for feature in data.get("features", []):
             for segment in feature.get("properties", {}).get("segments", []):
@@ -99,14 +113,19 @@ def get_all_trails(request):
      - properties = ['object_id', 'activity', 'length_km', 'difficulty']
     """
     if request.method == "GET":
-        trails_qs = Trail.objects.all()
-        
-        geojson_data = serialize(
-            'geojson',
-            trails_qs,
-            geometry_field='route', 
-            fields=('object_id', 'name', 'activity', 'length_km', 'difficulty')
-        )
+        # Bit of a hack
+        cache_key = "all_trails_geojson"
+        geojson_data = cache.get(cache_key)
+
+        if not geojson_data:
+            trails_qs = Trail.objects.all()
+            geojson_data = serialize(
+                'geojson',
+                trails_qs,
+                geometry_field='route', 
+                fields=('object_id', 'name', 'activity', 'length_km', 'difficulty')
+            )
+            cache.set(cache_key, geojson_data, 3600) # Cache for 1 hour
         
         return HttpResponse(geojson_data, content_type='application/json')
     
@@ -137,19 +156,25 @@ def get_top_trails_near_location(request):
     except ValueError:
         return JsonResponse({"error": "Invalid lat or lon values."}, status=400)
 
-    user_point = Point(lon, lat, srid=4326)
+    cache_key = f"top_trails_{lat}_{lon}"
+    geojson_data = cache.get(cache_key)
 
-    trails = Trail.objects.annotate(distance=Distance("route", user_point)) \
+    if not geojson_data:
+        user_point = Point(lon, lat, srid=4326)
+        trails = Trail.objects.annotate(distance=Distance("route", user_point)) \
                           .order_by("distance")[:5]
 
+        geojson_str = serialize("geojson", trails, geometry_field="route")
+        geojson_data = json.loads(geojson_str)
 
-    geojson_str = serialize("geojson", trails, geometry_field="route")
-    geojson_data = json.loads(geojson_str)
+        for feature, trail in zip(geojson_data["features"], trails):
+            feature["properties"]["distance_m"] = trail.distance.m
+        geojson_data = json.dumps(geojson_data)
+        cache.set(cache_key, geojson_data, 1800)
+    else:
+        geojson_data = json.loads(geojson_data)
 
-    for feature, trail in zip(geojson_data["features"], trails):
-        feature["properties"]["distance_m"] = trail.distance.m
-
-    return HttpResponse(json.dumps(geojson_data), content_type="application/json")
+    return HttpResponse(geojson_data, content_type="application/json")
     
 @csrf_exempt
 def get_top_cycle_trails_near_location(request):
@@ -178,20 +203,27 @@ def get_top_cycle_trails_near_location(request):
     except ValueError:
         return JsonResponse({"error": "Invalid lat or lon values."}, status=400)
 
-    user_point = Point(lon, lat, srid=4326)
+    cache_key = f"top_cycle_trails_{lat}_{lon}"
+    geojson_data = cache.get(cache_key)
+    if not geojson_data:
+        user_point = Point(lon, lat, srid=4326)
 
-    trails = Trail.objects.filter(activity="Cycling") \
-                          .annotate(distance=Distance("route", user_point)) \
-                          .order_by("distance")[:5]
+        trails = Trail.objects.filter(activity="Cycling") \
+                            .annotate(distance=Distance("route", user_point)) \
+                            .order_by("distance")[:5]
 
 
-    geojson_str = serialize("geojson", trails, geometry_field="route")
-    geojson_data = json.loads(geojson_str)
+        geojson_str = serialize("geojson", trails, geometry_field="route")
+        geojson_data = json.loads(geojson_str)
 
-    for feature, trail in zip(geojson_data["features"], trails):
-        feature["properties"]["distance_m"] = trail.distance.m
+        for feature, trail in zip(geojson_data["features"], trails):
+            feature["properties"]["distance_m"] = trail.distance.m
+        geojson_data = json.dumps(geojson_data)
+        cache.set(cache_key, geojson_data, 1800)
+    else:
+        geojson_data = json.loads(geojson_data)
 
-    return HttpResponse(json.dumps(geojson_data), content_type="application/json")
+    return HttpResponse(geojson_data, content_type="application/json")
 
 
 @csrf_exempt
@@ -221,20 +253,27 @@ def get_top_walking_trails_near_location(request):
     except ValueError:
         return JsonResponse({"error": "Invalid lat or lon values."}, status=400)
 
-    user_point = Point(lon, lat, srid=4326)
+    cache_key = f"top_walking_trails_{lat}_{lon}"
+    geojson_data = cache.get(cache_key)
+    if not geojson_data:
+        user_point = Point(lon, lat, srid=4326)
 
-    trails = Trail.objects.filter(activity="Walking") \
-                          .annotate(distance=Distance("route", user_point)) \
-                          .order_by("distance")[:5]
+        trails = Trail.objects.filter(activity="Walking") \
+                            .annotate(distance=Distance("route", user_point)) \
+                            .order_by("distance")[:5]
 
 
-    geojson_str = serialize("geojson", trails, geometry_field="route")
-    geojson_data = json.loads(geojson_str)
+        geojson_str = serialize("geojson", trails, geometry_field="route")
+        geojson_data = json.loads(geojson_str)
 
-    for feature, trail in zip(geojson_data["features"], trails):
-        feature["properties"]["distance_m"] = trail.distance.m
+        for feature, trail in zip(geojson_data["features"], trails):
+            feature["properties"]["distance_m"] = trail.distance.m
+        geojson_data = json.dumps(geojson_data)
+        cache.set(cache_key, geojson_data, 1800)
+    else:
+        geojson_data = json.loads(geojson_data)
 
-    return HttpResponse(json.dumps(geojson_data), content_type="application/json")
+    return HttpResponse(geojson_data, content_type="application/json")
 
 @csrf_exempt
 def get_location_suggestions(request):
@@ -246,16 +285,19 @@ def get_location_suggestions(request):
             
         # Use the geocodify API with improved fuzzy search parameters
         api_key = settings.LOCATION_API_KEY
+        cache_key = f"location_suggestions_{query}"
+        suggestions = cache.get(cache_key)
+        if suggestions is not None:
+            return JsonResponse(suggestions, safe=False)
         
         # Try with higher fuzzy value for better typo tolerance
         api_url = f"https://api.geocodify.com/v2/suggest?api_key={api_key}&q={query}&fuzzy=2&bias=ie"
         
         try:
-            response = requests.get(api_url)
-            if response.status_code != 200:
+            data = APICache.get_cached_response(api_url, timeout=3600)
+            if not data:
                 return JsonResponse([], safe=False)
-                
-            data = json.loads(response.text)
+
             suggestions = []
             
             for feature in data.get("response", {}).get("features", []):
