@@ -29,3 +29,15 @@
   .weather-table tr:nth-child(odd) {
     background-color: #ffffff;
   }
+
+.weather-severity-low {
+    background-color: #e6f4ea; /* light green */
+  }
+  
+.weather-severity-moderate {
+    background-color: #fff4d4; /* light yellow */
+  }
+  
+.weather-severity-high {
+    background-color: #fbeaea; /* light red */
+}
