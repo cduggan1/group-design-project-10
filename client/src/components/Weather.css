@@ -29,18 +29,27 @@
   .weather-table tr:nth-child(odd) {
     background-color: #ffffff;
   }
-
-.weather-severity-low {
-    background-color: #e6f4ea; /* light green */
-  }
   
-.weather-severity-moderate {
-    background-color: #fff4d4; /* light yellow */
-  }
-  
-.weather-severity-high {
-    background-color: #fbeaea; /* light red */
+.severity-dot {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
 }
+  
+.dot-low {
+  background-color: #a8e6a3;
+}
+  
+.dot-moderate {
+  background-color: #fce68b;
+}
+  
+.dot-high {
+  background-color: #f4b6b6;
+}
+  
 
 .severity-gradient-bar {
   position: relative;
