@@ -207,6 +207,27 @@ const Weather = ({
       return "low";
     }
   }
+
+  function getAverageSeverity(segments) {
+    if (!segments || segments.length === 0) return "low";
+    let total = 0;
+  
+    segments.forEach(segment => {
+      const rain = segment.weather.rain || 0;
+      const wind = segment.weather.wind_speed || 0;
+      const cloud = segment.weather.cloudiness || 0;
+  
+      const score = rain * 2 + wind * 0.5 + cloud * 0.1;
+      total += score;
+    });
+  
+    const avgScore = total / segments.length;
+  
+    if (avgScore > 40) return "high";
+    if (avgScore > 20) return "moderate";
+    return "low";
+  }
+  
   
   // Function to handle map click events and update latitude & longitude
   function LocationMarker() {
