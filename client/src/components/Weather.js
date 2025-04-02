@@ -548,9 +548,14 @@ const Weather = ({
             <summary>
               <div>
                 <strong>{trail.properties.name}</strong>
-                <div className={`severity-bar ${getAverageSeverity(
-                  trailWeather.features[index]?.properties?.segments
-                )}`}></div>
+                <div className="severity-gradient-bar">
+                  <div
+                    className="severity-indicator"
+                    style={{
+                      left: `${getSeverityPercent(trailWeather.features[index]?.properties?.segments)}%`,
+                    }}
+                  />
+                </div>
               </div>
               {excluded && (
                 <span style={{ color: "red", marginLeft: "10px" }}>
