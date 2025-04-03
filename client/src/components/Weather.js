@@ -191,6 +191,47 @@ const Weather = ({
     }
   };
 
+  function getWeatherSeverity(weather) {
+    const { temperature, wind_speed, rain } = weather;
+  
+    if (temperature < 5 || temperature > 30 || wind_speed > 30 || rain > 5) {
+      return "high";
+    } else if (
+      (temperature >= 5 && temperature < 15) ||
+      (temperature > 25 && temperature <= 30) ||
+      (wind_speed >= 15 && wind_speed <= 30) ||
+      (rain >= 1 && rain <= 5)
+    ) {
+      return "moderate";
+    } else {
+      return "low";
+    }
+  }
+
+  function getSeverityPercent(segments) {
+    if (!segments || segments.length === 0) return 0;
+  
+    let total = 0;
+    segments.forEach(segment => {
+      const rain = segment.weather.rain || 0;
+      const wind = segment.weather.wind_speed || 0;
+      const temp = segment.weather.temperature || 0;
+  
+      const score =
+        (rain * 2) +
+        (wind * 0.5) +
+        (temp < 5 || temp > 30 ? 20 : 0); // penalize temps outside comfort
+      total += score;
+    });
+  
+    const avg = total / segments.length;
+  
+    // Normalize: 0 = green, 50 = red
+    return Math.min(100, (avg / 50) * 100);
+  }
+  
+  
+  
   // Function to handle map click events and update latitude & longitude
   function LocationMarker() {
     useMapEvents({
@@ -297,13 +338,7 @@ const Weather = ({
         })}
     </MapContainer>
   </div>
-  
-  
 
- {/*INSERT HERE div here for 2 collumns*/}
-
-
- 
   {/* Location Inputs + Buttons */}
   <div style={{ textAlign: "center", marginBottom: "20px" }}>
     <input type="text" value={latitude} readOnly />
@@ -391,6 +426,11 @@ const Weather = ({
 
     <div>
       <h2>Cycling Trail Weather</h2>
+      <div style={{ display: "flex", gap: "10px", margin: "10px 0", justifyContent: "center" }}>
+        <div className="weather-severity-low" style={{ padding: "5px 10px", borderRadius: "4px" }}>Low</div>
+        <div className="weather-severity-moderate" style={{ padding: "5px 10px", borderRadius: "4px" }}>Moderate</div>
+        <div className="weather-severity-high" style={{ padding: "5px 10px", borderRadius: "4px" }}>High</div>
+      </div>
       <div style={{ textAlign:"left" }}>
       {topCycleTrails.features.map((trail, index) => {
         const segment = trailWeather.features[index]?.properties?.segments[0];
@@ -400,7 +440,17 @@ const Weather = ({
         return (
           <details key={index} style={{ marginBottom: "10px" }}>
             <summary>
-              {trail.properties.name}
+              <div>
+                <strong>{trail.properties.name}</strong>
+                <div className="severity-gradient-bar">
+                  <div
+                    className="severity-indicator"
+                    style={{
+                      left: `${getSeverityPercent(trailWeather.features[index]?.properties?.segments)}%`,
+                    }}
+                  />
+                </div>
+              </div>
               {excluded && (
                 <span style={{ color: "red", marginLeft: "10px" }}>
                   — {reason}
@@ -438,7 +488,9 @@ const Weather = ({
                           ":00",
                           ""
                         );
-
+                        
+                        const severity = getWeatherSeverity(segment.weather);
+                        
                         return (
                           <div key={segmentIndex + 1}>
                             <table
@@ -449,8 +501,11 @@ const Weather = ({
                               }}
                             >
                               <tbody>
-                                <tr>
-                                  <th>{formattedTime}:</th>
+                              <tr>                                  
+                                <th>
+                                  <span className={`severity-dot dot-${severity}`}></span>
+                                  {formattedTime}:
+                                </th>
                                   <th>
                                     {segment.weather.rain}mm
                                     precipitation
@@ -485,6 +540,11 @@ const Weather = ({
   {topWalkingTrails && trailWeather && (
     <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
       <h2>Walking Trail Weather</h2>
+      <div style={{ display: "flex", gap: "10px", margin: "10px 0", justifyContent: "center" }}>
+        <div className="weather-severity-low" style={{ padding: "5px 10px", borderRadius: "4px" }}>Low</div>
+        <div className="weather-severity-moderate" style={{ padding: "5px 10px", borderRadius: "4px" }}>Moderate</div>
+        <div className="weather-severity-high" style={{ padding: "5px 10px", borderRadius: "4px" }}>High</div>
+      </div>
       <div style={{ textAlign:"left" }}>
 
       {topWalkingTrails.features.map((trail, index) => {
@@ -495,7 +555,17 @@ const Weather = ({
         return (
           <details key={index} style={{ marginBottom: "10px" }}>
             <summary>
-              {trail.properties.name}
+              <div>
+                <strong>{trail.properties.name}</strong>
+                <div className="severity-gradient-bar">
+                  <div
+                    className="severity-indicator"
+                    style={{
+                      left: `${getSeverityPercent(trailWeather.features[index]?.properties?.segments)}%`,
+                    }}
+                  />
+                </div>
+              </div>
               {excluded && (
                 <span style={{ color: "red", marginLeft: "10px" }}>
                   — {reason}
@@ -509,6 +579,71 @@ const Weather = ({
             }>
               Set Destination
             </button>
+            <div style={{ paddingLeft: "20px" }}>
+                  If starting the trail in an hour:
+                  <div
+                    style={{ listStyleType: "none", paddingLeft: "0" }}
+                  >
+                    {trailWeather.features[
+                      index
+                    ].properties.segments.map(
+                      (segment, segmentIndex) => {
+                        const isoString = segment.weather.forecast_time;
+                        const date = new Date(isoString);
+                        const timeString = date.toLocaleTimeString(
+                          "en-US",
+                          {
+                            hour: "numeric",
+                            minute: "numeric",
+                            hour12: true,
+                          }
+                        );
+                        const formattedTime = timeString.replace(
+                          ":00",
+                          ""
+                        );
+                        
+                        const severity = getWeatherSeverity(segment.weather);
+                        
+                        return (
+                          <div key={segmentIndex + 1}>
+                            <table
+                              align="center"
+                              style={{
+                                width: "100%",
+                                borderCollapse: "collapse",
+                              }}
+                            >
+                              <tbody>
+                              <tr>                                  
+                                <th>
+                                  <span className={`severity-dot dot-${severity}`}></span>
+                                  {formattedTime}:
+                                </th>
+                                  <th>
+                                    {segment.weather.rain}mm
+                                    precipitation
+                                  </th>
+                                  <th>
+                                    {segment.weather.temperature}°C
+                                  </th>
+                                  <th>
+                                    {segment.weather.cloudiness}% cloud
+                                    cover
+                                  </th>
+                                  <th>
+                                    {segment.weather.wind_speed}km/h{" "}
+                                    {segment.weather.wind_direction}
+                                  </th>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+            </div>
           </details>
         );
       })}
