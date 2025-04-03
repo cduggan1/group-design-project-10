@@ -45,14 +45,17 @@ class Command(BaseCommand):
             if geom_type == "Point":
                 geom = Point(geom_coords)
             elif geom_type == "LineString":
-                geom = LineString(geom_coords)
+                ls = LineString(geom_coords)
+                geom = MultiLineString([ls])
             elif geom_type == "MultiLineString":
                 try:
                     line_strings = [LineString(part) for part in geom_coords if len(part) > 1]
                     if line_strings:
-                        geom = LineString([coord for line in line_strings for coord in line.coords])
+                        geom = MultiLineString(line_strings)
                     else:
-                        self.stderr.write(f"Skipping MultiLineString for feature {trail_id} due to empty geometry")
+                        self.stderr.write(
+                            f"Skipping MultiLineString for feature {trail_id} due to empty geometry"
+                        )
                         continue
                 except Exception as e:
                     self.stderr.write(f"Error processing MultiLineString for feature {trail_id}: {e}")
@@ -81,7 +84,7 @@ class Command(BaseCommand):
                     "dogs_allowed": properties.get("DogsAllowed"),
                     "management_organisation": properties.get("ManagementOrganisation"),
                     "location": geom if isinstance(geom, Point) else None,
-                    "route": geom if isinstance(geom, LineString) else None,
+                    "route": geom if isinstance(geom, (LineString, MultiLineString)) else None,
                 }
             )
 
