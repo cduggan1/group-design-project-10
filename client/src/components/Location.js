@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, use } from "react";
+import "./Location.css";
 
 const Location = ({
   updateLocation,
@@ -7,6 +8,9 @@ const Location = ({
   saveDefaultLocation,
   showHeader = true,
   showButtons = true,
+  favorites,
+  updateDestination,
+  removeFavoriteDestination,
 }) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [locationType, setLocationType] = useState("city"); // "city", "landmark", or "gps"
@@ -87,7 +91,6 @@ const Location = ({
     setError("");
   };
 
-
   const getGeocodedAddress = async (lat, lon) => {
     try {
       const response = await fetch(
@@ -148,13 +151,15 @@ const Location = ({
       setIsLoading(false);
       setShowSuggestions(false);
     }
-  }
+  };
 
   const calculateSimilarity = (str1, str2) => {
     const s1 = str1.toLowerCase();
     const s2 = str2.toLowerCase();
 
-    const matrix = Array(s1.length + 1).fill().map(() => Array(s2.length + 1).fill(0));
+    const matrix = Array(s1.length + 1)
+      .fill()
+      .map(() => Array(s2.length + 1).fill(0));
 
     for (let i = 0; i <= s1.length; i++) {
       matrix[i][0] = i;
@@ -174,7 +179,6 @@ const Location = ({
         );
       }
     }
-
 
     const maxLength = Math.max(s1.length, s2.length);
     return maxLength === 0 ? 1 : 1 - matrix[s1.length][s2.length] / maxLength;
@@ -197,26 +201,38 @@ const Location = ({
 
     try {
       const commonCities = [
-        "Dublin", "Cork", "Galway", "Limerick", "Waterford",
-        "Drogheda", "Kilkenny", "Wexford", "Sligo", "Athlone"
+        "Dublin",
+        "Cork",
+        "Galway",
+        "Limerick",
+        "Waterford",
+        "Drogheda",
+        "Kilkenny",
+        "Wexford",
+        "Sligo",
+        "Athlone",
       ];
 
       let clientSideSuggestions = [];
       const queryLower = query.toLowerCase();
 
-      commonCities.forEach(city => {
+      commonCities.forEach((city) => {
         const similarity = calculateSimilarity(queryLower, city.toLowerCase());
         if (similarity > 0.65) {
           clientSideSuggestions.push({
             id: `local-${city}`,
             label: `${city} (Possible match)`,
             value: city,
-            isLocalMatch: true
+            isLocalMatch: true,
           });
         }
       });
 
-      const response = await fetch(`${BASE_URL}/api/location-suggestions/?query=${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `${BASE_URL}/api/location-suggestions/?query=${encodeURIComponent(
+          query
+        )}`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch suggestions");
       }
@@ -229,9 +245,9 @@ const Location = ({
         combinedSuggestions = [...clientSideSuggestions];
       }
 
-      data.forEach(apiSuggestion => {
+      data.forEach((apiSuggestion) => {
         const isDuplicate = combinedSuggestions.some(
-          s => s.label.toLowerCase() === apiSuggestion.label.toLowerCase()
+          (s) => s.label.toLowerCase() === apiSuggestion.label.toLowerCase()
         );
 
         if (!isDuplicate) {
@@ -251,7 +267,6 @@ const Location = ({
     }
   };
 
-
   const buttonStyle = {
     padding: "8px 16px",
     backgroundColor: "#4CAF50",
@@ -259,7 +274,7 @@ const Location = ({
     border: "none",
     borderRadius: "4px",
     cursor: "pointer",
-    textAlign: "center"
+    textAlign: "center",
   };
 
   const handleSelectSuggestion = (suggestion) => {
@@ -267,20 +282,28 @@ const Location = ({
 
     if (suggestion.isLocalMatch) {
       setIsLoading(true);
-      fetch(`${BASE_URL}/api/address/?address=${encodeURIComponent(suggestion.value || suggestion.label)}`)
-        .then(response => response.json())
-        .then(data => {
+      fetch(
+        `${BASE_URL}/api/address/?address=${encodeURIComponent(
+          suggestion.value || suggestion.label
+        )}`
+      )
+        .then((response) => response.json())
+        .then((data) => {
           if (data && data.length > 0) {
             setLocation({
               latitude: data[0].latitude,
               longitude: data[0].longitude,
-              address: data[0].address
+              address: data[0].address,
             });
-            updateLocation(data[0].latitude, data[0].longitude, data[0].address);
+            updateLocation(
+              data[0].latitude,
+              data[0].longitude,
+              data[0].address
+            );
           }
           setIsLoading(false);
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Error fetching coordinates for suggestion:", err);
           setIsLoading(false);
         });
@@ -288,9 +311,13 @@ const Location = ({
       setLocation({
         latitude: suggestion.latitude,
         longitude: suggestion.longitude,
-        address: suggestion.value || suggestion.label
+        address: suggestion.value || suggestion.label,
       });
-      updateLocation(suggestion.latitude, suggestion.longitude, suggestion.value || suggestion.label);
+      updateLocation(
+        suggestion.latitude,
+        suggestion.longitude,
+        suggestion.value || suggestion.label
+      );
     }
   };
 
@@ -305,7 +332,6 @@ const Location = ({
       setShowSuggestions(true);
     }
   };
-
 
   return (
     <div
@@ -349,7 +375,7 @@ const Location = ({
             GPS Coordinates
           </label>
         </div>
-        
+
         {/* If city or landmark, show existing suggestions input */}
         {(locationType === "city" || locationType === "landmark") && (
           <div style={{ position: "relative" }}>
@@ -424,49 +450,50 @@ const Location = ({
             )}
           </div>
         )}
-      {locationType === "gps" && (
-        <div style={{ marginTop: "15px" }}>
-          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
-            <input
-              type="number"
-              placeholder="Latitude"
-              value={typedLatitude}
-              onChange={(e) => setTypedLatitude(e.target.value)}
+
+        {locationType === "gps" && (
+          <div style={{ marginTop: "15px" }}>
+            <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+              <input
+                type="number"
+                placeholder="Latitude"
+                value={typedLatitude}
+                onChange={(e) => setTypedLatitude(e.target.value)}
+                style={{
+                  width: "45%",
+                  padding: "10px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              />
+              <input
+                type="number"
+                placeholder="Longitude"
+                value={typedLongitude}
+                onChange={(e) => setTypedLongitude(e.target.value)}
+                style={{
+                  width: "45%",
+                  padding: "10px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                }}
+              />
+            </div>
+            <button
+              onClick={handleManualGpsSubmit}
               style={{
-                width: "45%",
-                padding: "10px",
+                padding: "8px 16px",
+                backgroundColor: "#4CAF50",
+                color: "white",
+                border: "none",
                 borderRadius: "4px",
-                border: "1px solid #ccc",
+                cursor: "pointer",
               }}
-            />
-            <input
-              type="number"
-              placeholder="Longitude"
-              value={typedLongitude}
-              onChange={(e) => setTypedLongitude(e.target.value)}
-              style={{
-                width: "45%",
-                padding: "10px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-            />
+            >
+              Set GPS
+            </button>
           </div>
-          <button
-            onClick={handleManualGpsSubmit}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: "#4CAF50",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            Set GPS
-          </button>
-        </div>
-      )}
+        )}
         {showButtons && (
           <div
             style={{
@@ -512,6 +539,40 @@ const Location = ({
         ) : (
           <p>No location set</p>
         )}
+        {/* begin fav dest */}
+        {favorites && favorites.length > 0 && (
+          <div style={{ marginTop: "20px" }}>
+            <h3>Favorite Destinations</h3>
+            <div className="favorites-grid">
+              {favorites.map((fav, index) => (
+                <div
+                  key={index}
+                  className="favorite-item"
+                  onClick={() => {
+                    updateDestination(`${fav.latitude}, ${fav.longitude}`);
+                    alert(`Selected ${fav.name} as destination`);
+                  }}
+                >
+                  <div className="favorite-name">{fav.name}</div>
+                  <div className="favorite-coords">
+                    {fav.latitude}, {fav.longitude}
+                  </div>
+                  <button
+                    className="remove-favorite-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFavoriteDestination(index);
+                    }}
+                    title="Remove favorite"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* end fav dest */}
       </div>
 
       {error && (

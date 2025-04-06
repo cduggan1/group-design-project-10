@@ -9,10 +9,11 @@ import "leaflet/dist/leaflet.css";
 import React, { useState, useEffect } from "react";
 import L from "leaflet"; // Import the Leaflet library
 import WeatherAlerts from "./WeatherAlerts";
-import UserWeatherAlerts from './UserWeatherAlerts';
+import UserWeatherAlerts from "./UserWeatherAlerts";
 import "./Weather.css";
-import TrailWeatherPreferences, { getExclusionReason } from "./TrailWeatherPreferences";
-
+import TrailWeatherPreferences, {
+  getExclusionReason,
+} from "./TrailWeatherPreferences";
 
 // Fix for default icon not displaying in React-Leaflet
 const defaultIcon = new L.Icon({
@@ -30,6 +31,8 @@ const Weather = ({
   latitude: initialLat,
   longitude: initialLon,
   updateDestination,
+  saveFavoriteDestination,
+  favorites,
 }) => {
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [latitude, setLatitude] = useState(initialLat);
@@ -45,7 +48,6 @@ const Weather = ({
   const [maxDistance, setMaxDistance] = useState(50);
   const [isLoading, setIsLoading] = useState(false);
   const [preferences, setPreferences] = useState(null);
-
 
   useEffect(() => {
     if (initialLat && initialLon) {
@@ -193,7 +195,7 @@ const Weather = ({
 
   function getWeatherSeverity(weather) {
     const { temperature, wind_speed, rain } = weather;
-  
+
     if (temperature < 5 || temperature > 30 || wind_speed > 30 || rain > 5) {
       return "high";
     } else if (
@@ -210,28 +212,23 @@ const Weather = ({
 
   function getSeverityPercent(segments) {
     if (!segments || segments.length === 0) return 0;
-  
+
     let total = 0;
-    segments.forEach(segment => {
+    segments.forEach((segment) => {
       const rain = segment.weather.rain || 0;
       const wind = segment.weather.wind_speed || 0;
       const temp = segment.weather.temperature || 0;
-  
-      const score =
-        (rain * 2) +
-        (wind * 0.5) +
-        (temp < 5 || temp > 30 ? 20 : 0); // penalize temps outside comfort
+
+      const score = rain * 2 + wind * 0.5 + (temp < 5 || temp > 30 ? 20 : 0); // penalize temps outside comfort
       total += score;
     });
-  
+
     const avg = total / segments.length;
-  
+
     // Normalize: 0 = green, 50 = red
     return Math.min(100, (avg / 50) * 100);
   }
-  
-  
-  
+
   // Function to handle map click events and update latitude & longitude
   function LocationMarker() {
     useMapEvents({
@@ -246,7 +243,6 @@ const Weather = ({
   }
 
   return (
-    
     <div
       style={{
         display: "flex",
@@ -256,480 +252,674 @@ const Weather = ({
       }}
     >
       {/* Weather Alerts Section - Now at the top */}
-      <div style={{ 
-        width: "100%", 
-        textAlign: "center", 
-        marginBottom: "20px" 
-        }}>
-
+      <div
+        style={{
+          width: "100%",
+          textAlign: "center",
+          marginBottom: "20px",
+        }}
+      >
         <WeatherAlerts latitude={latitude} longitude={longitude} />
       </div>
 
       {/* Add User Weather Alerts below official alerts */}
-      <div style ={{
-        width: "100%", 
-        display: "flex", 
-        justifyContent: "center", 
-        marginBottom: "20px",
-        gap: "20px"
-        }}  
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "20px",
+          gap: "20px",
+        }}
       >
-
-        <div style={{ 
-          width: "fit-content", 
-          textAlign: "center"
+        <div
+          style={{
+            width: "fit-content",
+            textAlign: "center",
           }}
         >
-            <UserWeatherAlerts weatherData={weatherData} latitude={latitude} longitude={longitude} />
+          <UserWeatherAlerts
+            weatherData={weatherData}
+            latitude={latitude}
+            longitude={longitude}
+          />
         </div>
 
-        <div style={{ 
-          width: "fit-content", 
-          textAlign: "left"
+        <div
+          style={{
+            width: "fit-content",
+            textAlign: "left",
           }}
         >
           <TrailWeatherPreferences onChange={setPreferences} />
         </div>
       </div>
 
- {/* LEFT COLUMN: Weather Overview + Trails */}
-<div style={{ flex: 1, minWidth: "100%", textAlign:"center" }}>
-  <h2 style={{ textAlign: "center" }}>Weather Forecast</h2>
+      {/* LEFT COLUMN: Weather Overview + Trails */}
+      <div style={{ flex: 1, minWidth: "100%", textAlign: "center" }}>
+        <h2 style={{ textAlign: "center" }}>Weather Forecast</h2>
 
-  {/* Map */}
-  <div style={{ height: "300px", width: "100%", marginBottom: "10px" }}>
-    <MapContainer
-      center={[53.49, -7.562]}
-      zoom={7}
-      style={{ height: "100%", width: "100%" }}
-    >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      <LocationMarker />
-      {topCycleTrails &&
-        topCycleTrails.features.map((trail, index) => {
-          const polylineCoords = trail.geometry.coordinates.map(
-            ([lng, lat]) => [lat, lng]
-          );
-          return (
-            <Polyline
-              key={index}
-              positions={polylineCoords}
-              color="blue"
-              weight={5}
+        {/* Map */}
+        <div style={{ height: "300px", width: "100%", marginBottom: "10px" }}>
+          <MapContainer
+            center={[53.49, -7.562]}
+            zoom={7}
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-          );
-        })}
-      {topWalkingTrails &&
-        topWalkingTrails.features.map((trail, index) => {
-          const polylineCoords = trail.geometry.coordinates.map(
-            ([lng, lat]) => [lat, lng]
-          );
-          return (
-            <Polyline
-              key={index}
-              positions={polylineCoords}
-              color="red"
-              weight={5}
-            />
-          );
-        })}
-    </MapContainer>
-  </div>
+            <LocationMarker />
+            {topCycleTrails &&
+              topCycleTrails.features.map((trail, index) => {
+                const polylineCoords = trail.geometry.coordinates.map(
+                  ([lng, lat]) => [lat, lng]
+                );
+                return (
+                  <Polyline
+                    key={index}
+                    positions={polylineCoords}
+                    color="blue"
+                    weight={5}
+                  />
+                );
+              })}
+            {topWalkingTrails &&
+              topWalkingTrails.features.map((trail, index) => {
+                const polylineCoords = trail.geometry.coordinates.map(
+                  ([lng, lat]) => [lat, lng]
+                );
+                return (
+                  <Polyline
+                    key={index}
+                    positions={polylineCoords}
+                    color="red"
+                    weight={5}
+                  />
+                );
+              })}
+          </MapContainer>
+        </div>
 
-  {/* Location Inputs + Buttons */}
-  <div style={{ textAlign: "center", marginBottom: "20px" }}>
-    <input type="text" value={latitude} readOnly />
-    <input type="text" value={longitude} readOnly />
-    <div style={{ margin: "10px 0" }}>
-      <label>
-        Max Distance (km):&nbsp;
-        <input
-          type="number"
-          value={maxDistance}
-          onChange={(e) => setMaxDistance(e.target.value)}
-          style={{ width: "80px" }}
-        />
-      </label>
-    </div>
-    <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
-      <button className="btn-add-alert" onClick={() => { fetchSolar(); fetchWeather(); }}>
-        Get Weather at Your Location
-      </button>
-      <button className="btn-add-alert" onClick={() => { handleFetchCyclingTrails(); fetchTrailWeather("Cycling"); }} disabled={isLoading}>
-        {isLoading ? "Loading..." : "Get Cycling Trails"}
-      </button>
-      <button className="btn-add-alert" onClick={() => { handleFetchWalkingTrails(); fetchTrailWeather("Walking"); }} disabled={isLoading}>
-        {isLoading ? "Loading..." : "Get Walking Trails"}
-      </button>
-    </div>
-  </div>
-   {/*WRAPPER FLEX - TWO COLUMN LAYOUT */}
-   <div
-        style={{
+        {/* Location Inputs + Buttons */}
+        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+          <input type="text" value={latitude} readOnly />
+          <input type="text" value={longitude} readOnly />
+          <div style={{ margin: "10px 0" }}>
+            <label>
+              Max Distance (km):&nbsp;
+              <input
+                type="number"
+                value={maxDistance}
+                onChange={(e) => setMaxDistance(e.target.value)}
+                style={{ width: "80px" }}
+              />
+            </label>
+          </div>
+          <div
+            style={{ display: "flex", justifyContent: "center", gap: "12px" }}
+          >
+            <button
+              className="btn-add-alert"
+              onClick={() => {
+                fetchSolar();
+                fetchWeather();
+              }}
+            >
+              Get Weather at Your Location
+            </button>
+            <button
+              className="btn-add-alert"
+              onClick={() => {
+                handleFetchCyclingTrails();
+                fetchTrailWeather("Cycling");
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? "Loading..." : "Get Cycling Trails"}
+            </button>
+            <button
+              className="btn-add-alert"
+              onClick={() => {
+                handleFetchWalkingTrails();
+                fetchTrailWeather("Walking");
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? "Loading..." : "Get Walking Trails"}
+            </button>
+          </div>
+        </div>
+        {/*WRAPPER FLEX - TWO COLUMN LAYOUT */}
+        <div
+          style={{
             display: "flex",
             flexDirection: "row",
             width: "100%",
             alignItems: "flex-start",
             gap: "30px",
-        }}
-      >
-  {/* Weather + Trails Wrap (no gap here!) */}
-  {weatherData && solarData && (
-    <div style={{ display: "flex", textAlign: "center", flexDirection: "column", gap: "20px" }}>
-      <div>
-        <h2>Current Weather</h2>
-        <table style={{ width: "100%", textAlign: "center", borderCollapse: "collapse" }}>
-          <tbody>
-            <tr>
-              <td>Temperature</td>
-              <td>Cloudiness</td>
-              <td>Wind</td>
-              <td>Precipitation</td>
-            </tr>
-            <tr>
-              <td>{weatherData[0].temperature}°C</td>
-              <td>{weatherData[0].cloudiness}%</td>
-              <td>{weatherData[0].wind_speed} km/h {weatherData[0].wind_direction}</td>
-              <td>{weatherData[0].rain} mm</td>
-            </tr>
-          </tbody>
-        </table>
-        <hr style={{ margin: "10px 0" }} />
-      </div>
-
-      <div>
-        <h2>Sun Times</h2>
-        <table style={{ width: "100%", textAlign: "center", borderCollapse: "collapse" }}>
-          <tbody>
-            <tr>
-              <td>Sunrise</td>
-              <td>Sunset</td>
-            </tr>
-            <tr>
-              <td>{solarData[0].rise}</td>
-              <td>{solarData[0].set}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )}
-
-  <div style={{ display: "flex", justifyContent: "space-evenly", gap: "12px" }}>
-
-  {/* Trails Section */}
-  {topCycleTrails && trailWeather && (
-    <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
-
-    <div>
-      <h2>Cycling Trail Weather</h2>
-      <div style={{ display: "flex", gap: "10px", margin: "10px 0", justifyContent: "center" }}>
-        <div className="weather-severity-low" style={{ padding: "5px 10px", borderRadius: "4px" }}>Low</div>
-        <div className="weather-severity-moderate" style={{ padding: "5px 10px", borderRadius: "4px" }}>Moderate</div>
-        <div className="weather-severity-high" style={{ padding: "5px 10px", borderRadius: "4px" }}>High</div>
-      </div>
-      <div style={{ textAlign:"left" }}>
-      {topCycleTrails.features.map((trail, index) => {
-        const segment = trailWeather.features[index]?.properties?.segments[0];
-        const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
-        const excluded = !!reason;
-
-        return (
-          <details key={index} style={{ marginBottom: "10px" }}>
-            <summary>
+          }}
+        >
+          {/* Weather + Trails Wrap (no gap here!) */}
+          {weatherData && solarData && (
+            <div
+              style={{
+                display: "flex",
+                textAlign: "center",
+                flexDirection: "column",
+                gap: "20px",
+              }}
+            >
               <div>
-                <strong>{trail.properties.name}</strong>
-                <div className="severity-gradient-bar">
-                  <div
-                    className="severity-indicator"
-                    style={{
-                      left: `${getSeverityPercent(trailWeather.features[index]?.properties?.segments)}%`,
-                    }}
-                  />
-                </div>
+                <h2>Current Weather</h2>
+                <table
+                  style={{
+                    width: "100%",
+                    textAlign: "center",
+                    borderCollapse: "collapse",
+                  }}
+                >
+                  <tbody>
+                    <tr>
+                      <td>Temperature</td>
+                      <td>Cloudiness</td>
+                      <td>Wind</td>
+                      <td>Precipitation</td>
+                    </tr>
+                    <tr>
+                      <td>{weatherData[0].temperature}°C</td>
+                      <td>{weatherData[0].cloudiness}%</td>
+                      <td>
+                        {weatherData[0].wind_speed} km/h{" "}
+                        {weatherData[0].wind_direction}
+                      </td>
+                      <td>{weatherData[0].rain} mm</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <hr style={{ margin: "10px 0" }} />
               </div>
-              {excluded && (
-                <span style={{ color: "red", marginLeft: "10px" }}>
-                  — {reason}
-                </span>
-              )}
-            </summary>
-            <button className="btn-add-alert" onClick={() =>
-              updateDestination(
-                `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
-              )
-            }>
-              Set Destination
-            </button>
 
-            <div style={{ paddingLeft: "20px" }}>
-                  If starting the trail in an hour:
-                  <div
-                    style={{ listStyleType: "none", paddingLeft: "0" }}
-                  >
-                    {trailWeather.features[
-                      index
-                    ].properties.segments.map(
-                      (segment, segmentIndex) => {
-                        const isoString = segment.weather.forecast_time;
-                        const date = new Date(isoString);
-                        const timeString = date.toLocaleTimeString(
-                          "en-US",
-                          {
-                            hour: "numeric",
-                            minute: "numeric",
-                            hour12: true,
-                          }
-                        );
-                        const formattedTime = timeString.replace(
-                          ":00",
-                          ""
-                        );
-                        
-                        const severity = getWeatherSeverity(segment.weather);
-                        
-                        return (
-                          <div key={segmentIndex + 1}>
-                            <table
-                              align="center"
-                              style={{
-                                width: "100%",
-                                borderCollapse: "collapse",
-                              }}
-                            >
-                              <tbody>
-                              <tr>                                  
-                                <th>
-                                  <span className={`severity-dot dot-${severity}`}></span>
-                                  {formattedTime}:
-                                </th>
-                                  <th>
-                                    {segment.weather.rain}mm
-                                    precipitation
-                                  </th>
-                                  <th>
-                                    {segment.weather.temperature}°C
-                                  </th>
-                                  <th>
-                                    {segment.weather.cloudiness}% cloud
-                                    cover
-                                  </th>
-                                  <th>
-                                    {segment.weather.wind_speed}km/h{" "}
-                                    {segment.weather.wind_direction}
-                                  </th>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
-            </div>
-          </details>
-        );
-      })}</div>          
-      </div>
-    </div>
-  )}
-
-  {topWalkingTrails && trailWeather && (
-    <div style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "6px" }}>
-      <h2>Walking Trail Weather</h2>
-      <div style={{ display: "flex", gap: "10px", margin: "10px 0", justifyContent: "center" }}>
-        <div className="weather-severity-low" style={{ padding: "5px 10px", borderRadius: "4px" }}>Low</div>
-        <div className="weather-severity-moderate" style={{ padding: "5px 10px", borderRadius: "4px" }}>Moderate</div>
-        <div className="weather-severity-high" style={{ padding: "5px 10px", borderRadius: "4px" }}>High</div>
-      </div>
-      <div style={{ textAlign:"left" }}>
-
-      {topWalkingTrails.features.map((trail, index) => {
-        const segment = trailWeather.features[index]?.properties?.segments[0];
-        const reason = preferences ? getExclusionReason(segment.weather, preferences) : null;
-        const excluded = !!reason;
-
-        return (
-          <details key={index} style={{ marginBottom: "10px" }}>
-            <summary>
               <div>
-                <strong>{trail.properties.name}</strong>
-                <div className="severity-gradient-bar">
-                  <div
-                    className="severity-indicator"
-                    style={{
-                      left: `${getSeverityPercent(trailWeather.features[index]?.properties?.segments)}%`,
-                    }}
-                  />
-                </div>
+                <h2>Sun Times</h2>
+                <table
+                  style={{
+                    width: "100%",
+                    textAlign: "center",
+                    borderCollapse: "collapse",
+                  }}
+                >
+                  <tbody>
+                    <tr>
+                      <td>Sunrise</td>
+                      <td>Sunset</td>
+                    </tr>
+                    <tr>
+                      <td>{solarData[0].rise}</td>
+                      <td>{solarData[0].set}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-              {excluded && (
-                <span style={{ color: "red", marginLeft: "10px" }}>
-                  — {reason}
-                </span>
-              )}
-            </summary>
-            <button className="btn-add-alert" onClick={() =>
-              updateDestination(
-                `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
-              )
-            }>
-              Set Destination
-            </button>
-            <div style={{ paddingLeft: "20px" }}>
-                  If starting the trail in an hour:
-                  <div
-                    style={{ listStyleType: "none", paddingLeft: "0" }}
-                  >
-                    {trailWeather.features[
-                      index
-                    ].properties.segments.map(
-                      (segment, segmentIndex) => {
-                        const isoString = segment.weather.forecast_time;
-                        const date = new Date(isoString);
-                        const timeString = date.toLocaleTimeString(
-                          "en-US",
-                          {
-                            hour: "numeric",
-                            minute: "numeric",
-                            hour12: true,
-                          }
-                        );
-                        const formattedTime = timeString.replace(
-                          ":00",
-                          ""
-                        );
-                        
-                        const severity = getWeatherSeverity(segment.weather);
-                        
-                        return (
-                          <div key={segmentIndex + 1}>
-                            <table
-                              align="center"
-                              style={{
-                                width: "100%",
-                                borderCollapse: "collapse",
-                              }}
-                            >
-                              <tbody>
-                              <tr>                                  
-                                <th>
-                                  <span className={`severity-dot dot-${severity}`}></span>
-                                  {formattedTime}:
-                                </th>
-                                  <th>
-                                    {segment.weather.rain}mm
-                                    precipitation
-                                  </th>
-                                  <th>
-                                    {segment.weather.temperature}°C
-                                  </th>
-                                  <th>
-                                    {segment.weather.cloudiness}% cloud
-                                    cover
-                                  </th>
-                                  <th>
-                                    {segment.weather.wind_speed}km/h{" "}
-                                    {segment.weather.wind_direction}
-                                  </th>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
             </div>
-          </details>
-        );
-      })}
-    </div>
-    </div>
-  )}
-  </div>
+          )}
 
-    <div style={{ flex: 1, textAlign: "center" }}>
-        {weatherData && weatherData.length === 24 && (
-          <div className="weather-table-container">
-            <table className="weather-table">
-              <thead>
-                <tr>
-                  <th>Time </th>
-                  <th>Temperature</th>
-                  <th>Cloudiness</th>
-                  <th>Wind Speed</th>
-                  <th>Precipitation</th>
-                  <th style={{ borderLeft: "3px solid black" }}>Time</th>
-                  <th>Temperature</th>
-                  <th>Cloudiness</th>
-                  <th>Wind Speed</th>
-                  <th>Precipitation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {weatherData &&
-                  weatherData.length > 1 &&
-                  weatherData.map((data, index) => {
-                    if (index % 2 === 0) {
-                      const nextData = weatherData[index + 1]; // Get the next hour data (pair)
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-evenly",
+              gap: "12px",
+            }}
+          >
+            {/* Trails Section */}
+            {topCycleTrails && trailWeather && (
+              <div
+                style={{
+                  margin: "20px 0",
+                  padding: "15px",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                }}
+              >
+                <div>
+                  <h2>Cycling Trail Weather</h2>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      margin: "10px 0",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div
+                      className="weather-severity-low"
+                      style={{ padding: "5px 10px", borderRadius: "4px" }}
+                    >
+                      Low
+                    </div>
+                    <div
+                      className="weather-severity-moderate"
+                      style={{ padding: "5px 10px", borderRadius: "4px" }}
+                    >
+                      Moderate
+                    </div>
+                    <div
+                      className="weather-severity-high"
+                      style={{ padding: "5px 10px", borderRadius: "4px" }}
+                    >
+                      High
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "left" }}>
+                    {topCycleTrails.features.map((trail, index) => {
+                      const segment =
+                        trailWeather.features[index]?.properties?.segments[0];
+                      const reason = preferences
+                        ? getExclusionReason(segment.weather, preferences)
+                        : null;
+                      const excluded = !!reason;
+
                       return (
-                        <tr key={index}>
-                          <td>{data.time}</td>
-                          <td>{data.temperature}°C</td>
-                          <td>{data.cloudiness}%</td>
-                          <td>
-                            {data.wind_speed} km/h {data.wind_direction}
-                          </td>
-                          <td>{data.rain} mm</td>
+                        <details key={index} style={{ marginBottom: "10px" }}>
+                          <summary>
+                            <div>
+                              <strong>{trail.properties.name}</strong>
+                              <div className="severity-gradient-bar">
+                                <div
+                                  className="severity-indicator"
+                                  style={{
+                                    left: `${getSeverityPercent(
+                                      trailWeather.features[index]?.properties
+                                        ?.segments
+                                    )}%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            {excluded && (
+                              <span
+                                style={{ color: "red", marginLeft: "10px" }}
+                              >
+                                — {reason}
+                              </span>
+                            )}
+                          </summary>
+                          <button
+                            className="btn-add-alert"
+                            onClick={() =>
+                              updateDestination(
+                                `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+                              )
+                            }
+                          >
+                            Set Destination
+                          </button>
 
-                          {nextData ? (
-                            <>
-                              <td style={{ borderLeft: "3px solid black" }}>
-                                {nextData.time}
-                              </td>
-                              <td>{nextData.temperature}°C</td>
-                              <td>{nextData.cloudiness}%</td>
-                              <td>
-                                {nextData.wind_speed} km/h{" "}
-                                {nextData.wind_direction}
-                              </td>
-                              <td>{nextData.rain} mm</td>
-                            </>
-                          ) : (
-                            // If there's no pair (odd number of entries), show empty cells
-                            <>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                              <td>-</td>
-                            </>
-                          )}
-                        </tr>
+                          <button
+                            className="btn-add-alert"
+                            onClick={() => {
+                              const lat = trail.geometry.coordinates[0][1];
+                              const lon = trail.geometry.coordinates[0][0];
+                              const name = trail.properties.name;
+
+                              const isDuplicate = favorites.some(
+                                (fav) =>
+                                  fav.latitude === lat && fav.longitude === lon
+                              );
+
+                              if (!isDuplicate) {
+                                saveFavoriteDestination(lat, lon, name);
+                                alert(
+                                  `Saved ${name} as a favorite destination!`
+                                );
+                              } else {
+                                alert(
+                                  "This destination is already in your favorites!"
+                                );
+                              }
+                            }}
+                          >
+                            Save as Favorite
+                          </button>
+                          <div style={{ paddingLeft: "20px" }}>
+                            If starting the trail in an hour:
+                            <div
+                              style={{
+                                listStyleType: "none",
+                                paddingLeft: "0",
+                              }}
+                            >
+                              {trailWeather.features[
+                                index
+                              ].properties.segments.map(
+                                (segment, segmentIndex) => {
+                                  const isoString =
+                                    segment.weather.forecast_time;
+                                  const date = new Date(isoString);
+                                  const timeString = date.toLocaleTimeString(
+                                    "en-US",
+                                    {
+                                      hour: "numeric",
+                                      minute: "numeric",
+                                      hour12: true,
+                                    }
+                                  );
+                                  const formattedTime = timeString.replace(
+                                    ":00",
+                                    ""
+                                  );
+
+                                  const severity = getWeatherSeverity(
+                                    segment.weather
+                                  );
+
+                                  return (
+                                    <div key={segmentIndex + 1}>
+                                      <table
+                                        align="center"
+                                        style={{
+                                          width: "100%",
+                                          borderCollapse: "collapse",
+                                        }}
+                                      >
+                                        <tbody>
+                                          <tr>
+                                            <th>
+                                              <span
+                                                className={`severity-dot dot-${severity}`}
+                                              ></span>
+                                              {formattedTime}:
+                                            </th>
+                                            <th>
+                                              {segment.weather.rain}mm
+                                              precipitation
+                                            </th>
+                                            <th>
+                                              {segment.weather.temperature}°C
+                                            </th>
+                                            <th>
+                                              {segment.weather.cloudiness}%
+                                              cloud cover
+                                            </th>
+                                            <th>
+                                              {segment.weather.wind_speed}km/h{" "}
+                                              {segment.weather.wind_direction}
+                                            </th>
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  );
+                                }
+                              )}
+                            </div>
+                          </div>
+                        </details>
                       );
-                    } else {
-                      return null; // Skip odd rows as they are already included in pairs
-                    }
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {topWalkingTrails && trailWeather && (
+              <div
+                style={{
+                  margin: "20px 0",
+                  padding: "15px",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                }}
+              >
+                <h2>Walking Trail Weather</h2>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                    margin: "10px 0",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div
+                    className="weather-severity-low"
+                    style={{ padding: "5px 10px", borderRadius: "4px" }}
+                  >
+                    Low
+                  </div>
+                  <div
+                    className="weather-severity-moderate"
+                    style={{ padding: "5px 10px", borderRadius: "4px" }}
+                  >
+                    Moderate
+                  </div>
+                  <div
+                    className="weather-severity-high"
+                    style={{ padding: "5px 10px", borderRadius: "4px" }}
+                  >
+                    High
+                  </div>
+                </div>
+                <div style={{ textAlign: "left" }}>
+                  {topWalkingTrails.features.map((trail, index) => {
+                    const segment =
+                      trailWeather.features[index]?.properties?.segments[0];
+                    const reason = preferences
+                      ? getExclusionReason(segment.weather, preferences)
+                      : null;
+                    const excluded = !!reason;
+
+                    return (
+                      <details key={index} style={{ marginBottom: "10px" }}>
+                        <summary>
+                          <div>
+                            <strong>{trail.properties.name}</strong>
+                            <div className="severity-gradient-bar">
+                              <div
+                                className="severity-indicator"
+                                style={{
+                                  left: `${getSeverityPercent(
+                                    trailWeather.features[index]?.properties
+                                      ?.segments
+                                  )}%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {excluded && (
+                            <span style={{ color: "red", marginLeft: "10px" }}>
+                              — {reason}
+                            </span>
+                          )}
+                        </summary>
+                        <button
+                          className="btn-add-alert"
+                          onClick={() =>
+                            updateDestination(
+                              `${trail.geometry.coordinates[0][1]}, ${trail.geometry.coordinates[0][0]}`
+                            )
+                          }
+                        >
+                          Set Destination
+                        </button>
+                        <button
+                          className="btn-add-alert"
+                          onClick={() => {
+                            const lat = trail.geometry.coordinates[0][1];
+                            const lon = trail.geometry.coordinates[0][0];
+                            const name = trail.properties.name;
+
+                            const isDuplicate = favorites.some(
+                              (fav) =>
+                                fav.latitude === lat && fav.longitude === lon
+                            );
+
+                            if (!isDuplicate) {
+                              saveFavoriteDestination(lat, lon, name);
+                              alert(`Saved ${name} as a favorite destination!`);
+                            } else {
+                              alert(
+                                "This destination is already in your favorites!"
+                              );
+                            }
+                          }}
+                        >
+                          Save as Favorite
+                        </button>
+                        <div style={{ paddingLeft: "20px" }}>
+                          If starting the trail in an hour:
+                          <div
+                            style={{ listStyleType: "none", paddingLeft: "0" }}
+                          >
+                            {trailWeather.features[
+                              index
+                            ].properties.segments.map(
+                              (segment, segmentIndex) => {
+                                const isoString = segment.weather.forecast_time;
+                                const date = new Date(isoString);
+                                const timeString = date.toLocaleTimeString(
+                                  "en-US",
+                                  {
+                                    hour: "numeric",
+                                    minute: "numeric",
+                                    hour12: true,
+                                  }
+                                );
+                                const formattedTime = timeString.replace(
+                                  ":00",
+                                  ""
+                                );
+
+                                const severity = getWeatherSeverity(
+                                  segment.weather
+                                );
+
+                                return (
+                                  <div key={segmentIndex + 1}>
+                                    <table
+                                      align="center"
+                                      style={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                      }}
+                                    >
+                                      <tbody>
+                                        <tr>
+                                          <th>
+                                            <span
+                                              className={`severity-dot dot-${severity}`}
+                                            ></span>
+                                            {formattedTime}:
+                                          </th>
+                                          <th>
+                                            {segment.weather.rain}mm
+                                            precipitation
+                                          </th>
+                                          <th>
+                                            {segment.weather.temperature}°C
+                                          </th>
+                                          <th>
+                                            {segment.weather.cloudiness}% cloud
+                                            cover
+                                          </th>
+                                          <th>
+                                            {segment.weather.wind_speed}km/h{" "}
+                                            {segment.weather.wind_direction}
+                                          </th>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        </div>
+                      </details>
+                    );
                   })}
-              </tbody>
-            </table>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ flex: 1, textAlign: "center" }}>
+            {weatherData && weatherData.length === 24 && (
+              <div className="weather-table-container">
+                <table className="weather-table">
+                  <thead>
+                    <tr>
+                      <th>Time </th>
+                      <th>Temperature</th>
+                      <th>Cloudiness</th>
+                      <th>Wind Speed</th>
+                      <th>Precipitation</th>
+                      <th style={{ borderLeft: "3px solid black" }}>Time</th>
+                      <th>Temperature</th>
+                      <th>Cloudiness</th>
+                      <th>Wind Speed</th>
+                      <th>Precipitation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {weatherData &&
+                      weatherData.length > 1 &&
+                      weatherData.map((data, index) => {
+                        if (index % 2 === 0) {
+                          const nextData = weatherData[index + 1]; // Get the next hour data (pair)
+                          return (
+                            <tr key={index}>
+                              <td>{data.time}</td>
+                              <td>{data.temperature}°C</td>
+                              <td>{data.cloudiness}%</td>
+                              <td>
+                                {data.wind_speed} km/h {data.wind_direction}
+                              </td>
+                              <td>{data.rain} mm</td>
+
+                              {nextData ? (
+                                <>
+                                  <td style={{ borderLeft: "3px solid black" }}>
+                                    {nextData.time}
+                                  </td>
+                                  <td>{nextData.temperature}°C</td>
+                                  <td>{nextData.cloudiness}%</td>
+                                  <td>
+                                    {nextData.wind_speed} km/h{" "}
+                                    {nextData.wind_direction}
+                                  </td>
+                                  <td>{nextData.rain} mm</td>
+                                </>
+                              ) : (
+                                // If there's no pair (odd number of entries), show empty cells
+                                <>
+                                  <td>-</td>
+                                  <td>-</td>
+                                  <td>-</td>
+                                  <td>-</td>
+                                  <td>-</td>
+                                </>
+                              )}
+                            </tr>
+                          );
+                        } else {
+                          return null; // Skip odd rows as they are already included in pairs
+                        }
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+        {/* Error Message Display */}
+        {error && (
+          <div style={{ marginTop: "20px", color: "red", fontWeight: "bold" }}>
+            <p>{error}</p>
           </div>
         )}
-        
       </div>
-      </div>
-    {/* Error Message Display */}
-    {error && (
-      <div style={{ marginTop: "20px", color: "red", fontWeight: "bold" }}>
-        <p>{error}</p>
-      </div>
-    )}
     </div>
-  </div>
   );
 };
 
