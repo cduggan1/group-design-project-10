@@ -118,40 +118,46 @@ const Directions = ({ latitude, longitude, trailAdr }) => {
       {directions && (
         <div>
           {/* Summary Section */}
-          <div
-            style={{
-              backgroundColor: "#f5f5f5",
-              padding: "15px",
-              borderRadius: "8px",
-              marginBottom: "20px",
-            }}
-          >
-            <h3 style={{ marginTop: 0 }}>Route Summary</h3>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div>
-                <strong>Total Distance:</strong>{" "}
-                {formatDistance(directions.summary.total_distance)}
+          {directions?.summary && (
+            <div
+              style={{
+                backgroundColor: "#f5f5f5",
+                padding: "15px",
+                borderRadius: "8px",
+                marginBottom: "20px",
+              }}
+            >
+              <h3 style={{ marginTop: 0 }}>Route Summary</h3>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div>
+                  <strong>Total Distance:</strong>{" "}
+                  {formatDistance(directions.summary.total_distance)}
+                </div>
+                <div>
+                  <strong>Driving Time:</strong>{" "}
+                  {formatDuration(directions.summary.total_duration)}
+                </div>
               </div>
-              <div>
-                <strong>Driving Time:</strong>{" "}
-                {formatDuration(directions.summary.total_duration)}
-              </div>
-            </div>
 
-            <div style={{ marginTop: "10px" }}>
-              <h4>Alternative Travel Times:</h4>
-              <div style={{ display: "flex", gap: "20px" }}>
-                <div>
-                  <strong>Cycling:</strong>{" "}
-                  {formatDuration(directions.summary.travel_durations.cycling)}
-                </div>
-                <div>
-                  <strong>Walking:</strong>{" "}
-                  {formatDuration(directions.summary.travel_durations.walking)}
+              <div style={{ marginTop: "10px" }}>
+                <h4>Alternative Travel Times:</h4>
+                <div style={{ display: "flex", gap: "20px" }}>
+                  <div>
+                    <strong>Cycling:</strong>{" "}
+                    {formatDuration(
+                      directions.summary.travel_durations?.cycling ?? 0
+                    )}
+                  </div>
+                  <div>
+                    <strong>Walking:</strong>{" "}
+                    {formatDuration(
+                      directions.summary.travel_durations?.walking ?? 0
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Instructions Section */}
           <div style={{ border: "1px solid #ddd", borderRadius: "8px" }}>
