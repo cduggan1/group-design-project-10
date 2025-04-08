@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         params = {
-            "where": "1=1",
+            "where": "LengthKm <= 80",
             "outFields": "*",
             "outSR": "4326",  # WGS 84 (EPSG:4326)
             "f": "geojson"
@@ -47,6 +47,7 @@ class Command(BaseCommand):
             elif geom_type == "LineString":
                 geom = LineString(geom_coords)
             elif geom_type == "MultiLineString":
+                continue
                 try:
                     line_strings = [LineString(part) for part in geom_coords if len(part) > 1]
                     if line_strings:
