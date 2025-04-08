@@ -30,6 +30,8 @@ const Location = ({
   const suggestionsCache = useRef({});
   const debounceTimerRef = useRef(null);
 
+  const [gpsRetryCount, setGpsRetryCount] = useState(0);
+
   useEffect(() => {
     if (initialLocation) {
       setLocation(initialLocation);
@@ -62,33 +64,115 @@ const Location = ({
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocation({ latitude, longitude, address: "Fetching address..." });
-        updateLocation(latitude, longitude, "Fetching address...");
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const position = await new Promise((resolve, reject) => {
+        const timeout = gpsRetryCount > 0 ? 15000 : 10000;
+
+        const options = {
+          enableHighAccuracy: true,
+          timeout,
+          maximumAge: 0,
+        };
+        navigator.geolocation.getCurrentPosition(resolve, reject, options);
+      });
+
+      setGpsRetryCount(0);
+      const { latitude, longitude } = position.coords;
+
+      if (!isValidLatitude(latitude) || !isValidLongitude(longitude)) {
+        throw new Error("Invalid GPS coordinates");
+      }
+
+      setLocation({ latitude, longitude, address: "Fetching address..." });
+      updateLocation(latitude, longitude, "Fetching address...");
+
+      try {
         const address = await getGeocodedAddress(latitude, longitude);
         setLocation({ latitude, longitude, address });
         updateLocation(latitude, longitude, address);
-      },
-      (err) => {
-        setError("Failed to retrieve GPS location");
+      } catch (geoCodeErr) {
+        console.error("Geocoding failed:", geoCodeErr);
+        setLocation({
+          latitude,
+          longitude,
+          address: "Location (address unknown)",
+        });
+        updateLocation(latitude, longitude, "Location (address unknown)");
       }
-    );
+    } catch (err) {
+      console.error("Error fetching GPS location:", err);
+
+      if (gpsRetryCount < 2) {
+        setGpsRetryCount((prev) => prev + 1);
+        setTimeout(() => {
+          fetchGpsLocation();
+        }, 2000);
+        return;
+      }
+      let errorMessage = "Failed to retrieve GPS location";
+
+      if (err.code === err.TIMEOUT) {
+        errorMessage = "GPS timeout. Please try again.";
+      } else if (err.code === err.PERMISSION_DENIED) {
+        errorMessage = "GPS permission denied. Please allow location access.";
+      } else if (err.code === err.POSITION_UNAVAILABLE) {
+        errorMessage = "GPS position unavailable. Please check your device.";
+      } else if (err.code === err.UNKNOWN_ERROR) {
+        errorMessage = "An unknown error occurred while fetching GPS location.";
+      }
+      setError(errorMessage);
+    } finally {
+      if (gpsRetryCount === 0) {
+        setIsLoading(false);
+      }
+    }
   };
-
-  // GPS: Manually typed lat/lon
-
+  const isValidLatitude = (lat) => lat >= -90 && lat <= 90;
+  const isValidLongitude = (lon) => lon >= -180 && lon <= 180;
   const handleManualGpsSubmit = () => {
     const latNum = parseFloat(typedLatitude);
     const lonNum = parseFloat(typedLongitude);
-    if (isNaN(latNum) || isNaN(lonNum)) {
-      setError("Please enter valid numeric latitude and longitude.");
+
+    if (isNaN(latNum)) {
+      setError("Please enter a valid numeric latitude (-90 to 90)");
       return;
     }
+
+    if (isNaN(lonNum)) {
+      setError("Please enter a valid numeric longitude (-180 to 180)");
+      return;
+    }
+
+    if (!isValidLatitude(latNum)) {
+      setError("Latitude must be between -90 and 90 degrees");
+      return;
+    }
+
+    if (!isValidLongitude(lonNum)) {
+      setError("Longitude must be between -180 and 180 degrees");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
     setLocation({ latitude: latNum, longitude: lonNum, address: "Manual GPS" });
     updateLocation(latNum, lonNum, "Manual GPS");
-    setError("");
+
+    getGeocodedAddress(latNum, lonNum)
+      .then((address) => {
+        setLocation((prev) => ({ ...prev, address }));
+        updateLocation(latNum, lonNum, address);
+      })
+      .catch(() => {
+        // Silently fail
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   const getGeocodedAddress = async (lat, lon) => {
@@ -96,33 +180,56 @@ const Location = ({
       const response = await fetch(
         `${BASE_URL}/api/reverse-address?latitude=${lat}&longitude=${lon}`
       );
+
       if (!response.ok) {
-        throw new Error("Failed to fetch address");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
-      console.log(data);
+
+      if (!data || !data[0] || !data[0].address) {
+        throw new Error("Invalid address data received");
+      }
+
       return data[0].address;
     } catch (err) {
-      console.error("Error fetching address:", err);
-      return "Address not found";
+      console.error("Reverse geocoding error:", err);
+      throw err; // Re-throw to let caller handle
     }
   };
 
   const fetchCoordinates = async () => {
+    if (!query_address.trim()) {
+      setError("Please enter an address to search");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
     try {
       const response = await fetch(
-        `${BASE_URL}/api/address/?address=${query_address}`
+        `${BASE_URL}/api/address/?address=${encodeURIComponent(query_address)}`
       );
+
       if (!response.ok) {
-        throw new Error("Failed to fetch address");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const data = await response.json();
+
+      if (!data || data.length === 0) {
+        throw new Error("No matching locations found");
+      }
+
       setLocation(data[0]);
       updateLocation(data[0].latitude, data[0].longitude, data[0].address);
-      setError("");
     } catch (err) {
-      setError("Failed to fetch coordinates");
+      console.error("Error fetching coordinates:", err);
+      setError(err.message || "Failed to fetch coordinates");
       setLocation(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
