@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         params = {
-            "where": "LengthKm <= 80",
+            "where": "1=1",
             "outFields": "*",
             "outSR": "4326",  # WGS 84 (EPSG:4326)
             "f": "geojson"
