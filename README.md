@@ -4,7 +4,7 @@
 
 This app brings together features from several weather forecasting, recreation, and map navigation products. It allows users to search for locations on a map, ask about the weather, and explore various recreational activities all across Ireland, as well as get directions to a location. The app visualises trails on the map and displays weather forecast at various time milestones calculated dynamically based on trail data.
 
-![System Architecture Diagram](docs/sys_arc.png)
+![System Architecture Diagram](docs/sys_arc_v3.png)
 
 **Figure 1:** System Architecture Diagram
 
