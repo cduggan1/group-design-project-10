@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import Location from "./components/Location";
 import Directions from "./components/Directions";
 import CompareWeather from "./components/CompareWeather";
+import TripReminders from "./components/TripReminders";
 
 function App() {
   // State for user location
@@ -15,6 +16,7 @@ function App() {
   });
 
   const [isDefaultLocation, setIsDefaultLocation] = useState(false);
+  const [weatherData, setWeatherData] = useState(null);
 
   useEffect(() => {
     if (!isDefaultLocation) {
@@ -23,6 +25,27 @@ function App() {
       setIsDefaultLocation(true);
     }
   }, [isDefaultLocation]);
+
+  useEffect(() => {
+    if (location && location.latitude && location.longitude) {
+      fetchWeatherData(location.latitude, location.longitude);
+    }
+  }, [location]);
+
+  const fetchWeatherData = async (lat, lon) => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/weather/?lat=${lat}&lon=${lon}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch weather data");
+      }
+      const data = await response.json();
+      setWeatherData(data);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    }
+  };
 
   const fetchDefaultLocation = () => {
     const savedLocation = localStorage.getItem("defaultLocation");
@@ -153,13 +176,20 @@ function App() {
           <Route
             path="/weather"
             element={
-              <Weather
-                latitude={location.latitude}
-                longitude={location.longitude}
-                updateDestination={updateDestination}
-                saveFavoriteDestination={saveFavoriteDestination}
-                favorites={favorites}
-              />
+              <>
+                <Weather
+                  latitude={location.latitude}
+                  longitude={location.longitude}
+                  updateDestination={updateDestination}
+                  saveFavoriteDestination={saveFavoriteDestination}
+                  favorites={favorites}
+                />
+                <TripReminders
+                  weatherData={weatherData}
+                  latitude={location.latitude}
+                  longitude={location.longitude}
+                />
+              </>
             }
           />
           <Route
