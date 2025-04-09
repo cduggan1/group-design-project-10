@@ -47,6 +47,7 @@ class Command(BaseCommand):
             elif geom_type == "LineString":
                 geom = LineString(geom_coords)
             elif geom_type == "MultiLineString":
+                continue
                 try:
                     line_strings = [LineString(part) for part in geom_coords if len(part) > 1]
                     if line_strings:
