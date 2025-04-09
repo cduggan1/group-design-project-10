@@ -78,6 +78,42 @@ function App() {
     setLocation({ latitude: lat, longitude: lon, address: adr });
   };
 
+  //DESTINATIONS
+
+  const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem("favoriteDestinations");
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
+  }, []);
+
+  const saveFavoriteDestination = (lat, lon, name) => {
+    const newFavorite = {
+      latitude: lat,
+      longitude: lon,
+      name: name || `Destination ${favorites.length + 1}`,
+    };
+    console.log("Saving favorite destination:", newFavorite);
+    // Check if the destination already exists in favorites
+    const updatedFavorites = [...favorites, newFavorite];
+    setFavorites(updatedFavorites);
+    localStorage.setItem(
+      "favoriteDestinations",
+      JSON.stringify(updatedFavorites)
+    );
+  };
+
+  const removeFavoriteDestination = (index) => {
+    const updatedFavorites = favorites.filter((_, i) => i !== index);
+    setFavorites(updatedFavorites);
+    localStorage.setItem(
+      "favoriteDestinations",
+      JSON.stringify(updatedFavorites)
+    );
+  };
+
   // State for destination as a string (e.g., "latitude, longitude")
   const [destination, setDestination] = useState({
     latitude: null,
@@ -129,7 +165,11 @@ function App() {
                 updateLocation={updateLocation}
                 fetchDefaultLocation={fetchDefaultLocation}
                 saveDefaultLocation={saveDefaultLocation}
+                updateDestination={updateDestination}
                 initialLocation={location}
+                favorites={favorites}
+                saveFavoriteDestination={saveFavoriteDestination}
+                removeFavoriteDestination={removeFavoriteDestination}
               />
             }
           />
@@ -141,6 +181,8 @@ function App() {
                   latitude={location.latitude}
                   longitude={location.longitude}
                   updateDestination={updateDestination}
+                  saveFavoriteDestination={saveFavoriteDestination}
+                  favorites={favorites}
                 />
                 <TripReminders
                   weatherData={weatherData}
@@ -164,9 +206,7 @@ function App() {
           <Route
             path="/compare"
             element={
-              <CompareWeather
-                BASE_URL={process.env.REACT_APP_API_URL} 
-              />
+              <CompareWeather BASE_URL={process.env.REACT_APP_API_URL} />
             }
           />
         </Routes>

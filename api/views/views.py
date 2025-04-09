@@ -67,7 +67,32 @@ def get_reverse_address(request):
 
         values.append({"longitude": longitude, "latitude": latitude, "address": address})
         return JsonResponse(values, safe=False)
-    
+
+def get_travel_mode_durations(start, destination):
+    """
+    Fetches travel durations for different modes of transport between two locations.
+    """
+    api_key = settings.DIRECTIONS_API_KEY
+    modes = ["driving-car", "cycling-regular", "foot-walking"]
+    durations = {}
+
+    for mode in modes:
+        api_url = f"https://api.openrouteservice.org/v2/directions/{mode}?api_key={api_key}&start={start}&end={destination}"
+        data = APICache.get_cached_response(api_url, timeout=600)
+        
+        if not data:
+            return None
+        
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                return None
+        
+        duration = data["features"][0]["properties"]["segments"][0]["duration"]
+        durations[mode] = duration
+
+    return durations    
 
 def get_directions(request):
     if request.method == "GET":
@@ -77,32 +102,73 @@ def get_directions(request):
         if not start or not destination:
             return JsonResponse({"error": "Locations required"}, status=400)
         
-        start = ','.join(start.split(',')[::-1])
-        destination = ','.join(destination.split(',')[::-1])
+        try:
+            start = ','.join(start.split(',')[::-1])
+            destination = ','.join(destination.split(',')[::-1])
 
+            api_key = settings.DIRECTIONS_API_KEY
+            api_url = f"https://api.openrouteservice.org/v2/directions/driving-car?api_key={api_key}&start={start}&end={destination}"
 
-        api_key = settings.DIRECTIONS_API_KEY
-
-        api_url = f"https://api.openrouteservice.org/v2/directions/driving-car?api_key={api_key}&start={start}&end={destination}"
-
-        data = APICache.get_cached_response(api_url, timeout=600)
-        if not data:
-            return JsonResponse({"error": "Failed to fetch directions"}, status=500)
-        
-        if isinstance(data, str):
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError:
-                return JsonResponse({"error": "Invalid response format from API: " + data}, status=500)
+            data = APICache.get_cached_response(api_url, timeout=600)
             
-        
-        instructions = []
-        for feature in data.get("features", []):
-            for segment in feature.get("properties", {}).get("segments", []):
+            if not data:
+                return JsonResponse({"error": "Failed to fetch directions"}, status=500)
+            
+            if isinstance(data, str):
+                data = json.loads(data)
+
+            feature = data.get("features", [{}])[0]
+            properties = feature.get("properties", {})
+            segments = properties.get("segments", [])
+            
+            instruction_steps = []
+            for segment in segments:
                 for step in segment.get("steps", []):
-                    instructions.append(step.get("instruction", ""))
-        print(instructions)
-        return JsonResponse(instructions, safe=False)
+                    instruction_steps.append({
+                        "instruction": step.get("instruction", ""),
+                        "distance": step.get("distance", 0),  # in meters
+                        "duration": step.get("duration", 0),  # in seconds
+                        "type": step.get("type", "")
+                    })
+            
+            summary = properties.get("summary", {})
+            
+            travel_durations = {}
+            try:
+                durations = get_travel_mode_durations(start, destination)
+                if durations:
+                    travel_durations = {
+                        "driving": durations.get("driving-car"),
+                        "cycling": durations.get("cycling-regular"),
+                        "walking": durations.get("foot-walking")
+                    }
+            except Exception as e:
+                print(f"Error fetching travel mode durations: {str(e)}")
+
+            response = {
+                "metadata": {
+                    "start": start.split(',')[::-1],  # Return to lat,lon format
+                    "destination": destination.split(',')[::-1],
+                    "profile": "driving-car",
+                    "units": {
+                        "distance": "meters",
+                        "duration": "seconds"
+                    }
+                },
+                "summary": {
+                    "total_distance": summary.get("distance", 0),
+                    "total_duration": summary.get("duration", 0),
+                    "travel_durations": travel_durations
+                },
+                "instructions": instruction_steps,
+            }
+
+            return JsonResponse(response)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid response format from API"}, status=500)
+        except Exception as e:
+            return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=500)
     
 @csrf_exempt
 @cache_page(60 * 60)
